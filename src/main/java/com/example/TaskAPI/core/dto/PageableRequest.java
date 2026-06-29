@@ -19,24 +19,9 @@ public record PageableRequest(
         if (pageSize > 100) pageSize = 100;
     }
 
-    public Pageable toPageable() {
-        return PageRequest.of(pageNumber, pageSize, Sort.by(sortDirection, sortBy));
-    }
-
     public Pageable toPageable(Sort.Direction defaultSortDirection, String defaultSortBy) {
         return PageRequest.of(pageNumber, pageSize, Sort.by(
                 sortDirection == null ? defaultSortDirection : sortDirection,
                 sortBy.isBlank() ? defaultSortBy : sortBy));
-    }
-
-    public static class PageableRequestBuilder {
-        public PageableRequest build() {
-            return new PageableRequest(
-                    sortBy,
-                    sortDirection,
-                    pageNumber,
-                    pageSize
-            );
-        }
     }
 }

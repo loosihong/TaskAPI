@@ -28,15 +28,9 @@ public abstract class BaseMapperTest {
         String[] ignoreFields;
 
         switch (actual) {
-            case BaseEntity baseEntity -> {
-                ignoreFields = IGNORE_BASE_ENTITY_FIELDS;
-            }
-            case BaseExtensionEntity extensionEntity -> {
-                ignoreFields = IGNORE_BASE_EXTENSION_ENTITY_FIELDS;
-            }
-            default -> {
-                ignoreFields = new String[0];
-            }
+            case BaseEntity _ -> ignoreFields = IGNORE_BASE_ENTITY_FIELDS;
+            case BaseExtensionEntity _ -> ignoreFields = IGNORE_BASE_EXTENSION_ENTITY_FIELDS;
+            default -> ignoreFields = new String[0];
         }
 
         return assertThat(actual)

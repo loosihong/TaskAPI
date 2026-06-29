@@ -29,9 +29,4 @@ public class AuditLog extends BaseRecord {
     @Setter
     @OneToMany(mappedBy = "auditLog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AuditFieldLog> auditFieldLogs;
-
-    public void addFieldLog(AuditFieldLog auditFieldLog) {
-        auditFieldLogs.add(auditFieldLog);
-        auditFieldLog.setAuditLog(this);
-    }
 }

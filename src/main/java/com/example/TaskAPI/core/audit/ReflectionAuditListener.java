@@ -14,12 +14,10 @@ import java.util.Objects;
 
 @Component
 public class ReflectionAuditListener {
-    private static EntityManager entityManager;
     private static AuditLogRepository auditLogRepository;
 
     @Autowired
     public void init(EntityManager entityManager, AuditLogRepository auditLogRepository) {
-        ReflectionAuditListener.entityManager = entityManager;
         ReflectionAuditListener.auditLogRepository = auditLogRepository;
     }
 

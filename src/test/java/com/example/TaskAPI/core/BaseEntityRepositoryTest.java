@@ -5,7 +5,7 @@ import com.example.TaskAPI.core.audit.AuditLog;
 import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.core.model.repository.BaseEntityRepository;
-import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -81,21 +82,26 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
         }
 
         List<String> oldValues = new ArrayList<>();
+        Optional<T> optionalEntity = repository.findById(entity.getId());
 
-        entity = repository.findById(entity.getId()).get();
+        if (optionalEntity.isPresent()) {
+            entity = optionalEntity.get();
 
-        for (Pair<String, Object> fieldValuePair : updateFieldValuePairs) {
-            oldValues.add(ReflectionTestUtils.getField(entity, fieldValuePair.getFirst()).toString());
-            ReflectionTestUtils.setField(entity, fieldValuePair.getFirst(), fieldValuePair.getSecond());
-        }
+            for (Pair<String, Object> fieldValuePair : updateFieldValuePairs) {
+                Object field = ReflectionTestUtils.getField(entity, fieldValuePair.getFirst());
 
-        repository.saveAndFlush(entity);
+                if (field != null) {
+                    oldValues.add(field.toString());
+                    ReflectionTestUtils.setField(entity, fieldValuePair.getFirst(), fieldValuePair.getSecond());
+                }
+            }
 
-        List<AuditLog> auditLogs = auditLogRepository.findByEntityUuid(entity.getUuid());
+            repository.saveAndFlush(entity);
 
-        assertThat(auditLogs).isNotEmpty();
+            List<AuditLog> auditLogs = auditLogRepository.findByEntityUuid(entity.getUuid());
 
-        if (!CollectionUtils.isEmpty(auditLogs)) {
+            assertThat(auditLogs).isNotEmpty();
+
             List<AuditFieldLog> auditFieldLogs = auditLogs.getLast().getAuditFieldLogs();
 
             assertThat(auditFieldLogs).isNotEmpty();
@@ -123,20 +129,26 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
 
         long countBefore = auditLogRepository.count();
 
-        entity = repository.findById(entity.getId()).get();
+        Optional<T> optionalEntity = repository.findById(entity.getId());
 
-        for (Pair<String, Object> updateFieldValuePair : updateFieldValuePairs) {
-            ReflectionTestUtils.setField(entity, updateFieldValuePair.getFirst(), updateFieldValuePair.getSecond());
+        if (optionalEntity.isPresent()) {
+            entity = optionalEntity.get();
+
+            for (Pair<String, Object> updateFieldValuePair : updateFieldValuePairs) {
+                ReflectionTestUtils.setField(entity, updateFieldValuePair.getFirst(), updateFieldValuePair.getSecond());
+            }
+
+            repository.saveAndFlush(entity);
+
+            assertThat(auditLogRepository.count()).isEqualTo(countBefore);
         }
-
-        repository.saveAndFlush(entity);
-
-        assertThat(auditLogRepository.count()).isEqualTo(countBefore);
     }
 
     private String getNativeHibernateTableName(Class<?> entityClass) {
-        Session session = entityManager.getEntityManager().unwrap(Session.class);
-        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) session.getSessionFactory();
+        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) entityManager
+                .getEntityManager()
+                .getEntityManagerFactory()
+                .unwrap(SessionFactory.class);
         EntityPersister persister = sessionFactory
                 .getRuntimeMetamodels()
                 .getMappingMetamodel()

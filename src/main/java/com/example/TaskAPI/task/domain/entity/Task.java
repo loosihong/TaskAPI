@@ -34,8 +34,7 @@ public class Task extends BaseEntity implements Auditable {
     @OneToOne(
             mappedBy = Reference.TABLE_NAME,
             cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
+            orphanRemoval = true
     )
     private TaskDetail taskDetail;
 
@@ -89,7 +88,7 @@ public class Task extends BaseEntity implements Auditable {
 
     public void syncAssignees(Set<User> users) {
         Set<UUID> userUuids = users.stream()
-                .map(user -> user.getUuid())
+                .map(User::getUuid)
                 .collect(Collectors.toSet());
 
         this.taskAssignees.removeIf(taskAssignee ->
@@ -101,7 +100,7 @@ public class Task extends BaseEntity implements Auditable {
 
         users.stream()
                 .filter(user -> !existingUserUuids.contains(user.getUuid()))
-                .forEach(user -> addAssignee(user));
+                .forEach(this::addAssignee);
     }
 
     public static final class Reference {

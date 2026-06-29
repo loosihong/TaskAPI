@@ -5,6 +5,7 @@ import com.example.TaskAPI.task.domain.entity.QTask;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.core.types.dsl.StringPath;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -26,6 +27,7 @@ public interface TaskRepository extends
     @EntityGraph(attributePaths = {"taskAssignees"})
     Optional<Task> findWithAssigneesByUuid(UUID uuid);
 
+    @NullMarked
     @EntityGraph(attributePaths = {"taskAssignees", "taskAssignees.user"})
     @Override
     List<Task> findAll();

@@ -40,8 +40,6 @@ public class JwtService {
         try {
             extractClaims(token);
             return true;
-        } catch (ExpiredJwtException ex) {
-            return false;
         } catch (Exception e) {
             return false;
         }

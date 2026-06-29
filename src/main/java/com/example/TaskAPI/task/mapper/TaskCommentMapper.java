@@ -9,13 +9,9 @@ import com.example.TaskAPI.task.mapper.annotation.IgnoreTaskCommentMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-import java.util.List;
-
 @Mapper(config = BaseMapperConfig.class)
 public interface TaskCommentMapper {
     TaskCommentResponse.Detail toResponse(TaskComment taskComment);
-
-    List<TaskCommentResponse.Detail> toResponseList(List<TaskComment> taskComments);
 
     @IgnoreBaseEntityMapping
     @IgnoreTaskCommentMapping

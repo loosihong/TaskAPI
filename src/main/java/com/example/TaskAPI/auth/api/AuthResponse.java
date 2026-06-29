@@ -6,5 +6,5 @@ import lombok.Value;
 @Builder
 @Value
 public class AuthResponse {
-    private String token;
+    String token;
 }

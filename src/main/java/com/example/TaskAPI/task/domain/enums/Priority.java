@@ -1,7 +1,9 @@
 package com.example.TaskAPI.task.domain.enums;
 
 import jakarta.persistence.AttributeConverter;
+import lombok.Getter;
 
+@Getter
 public enum Priority {
     LOW(1),
     MEDIUM(2),
@@ -19,10 +21,6 @@ public enum Priority {
         }
 
         throw new IllegalArgumentException("Unknown Priority value: " + value);
-    }
-
-    public short getValue() {
-        return value;
     }
 
     @jakarta.persistence.Converter(autoApply = true)

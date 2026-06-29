@@ -4,7 +4,7 @@ A Spring Boot REST API for task management.
 
 ## Prerequisites
 
-- Java 25, Maven, Docker Desktop
+- Java 25, Gradle, Docker Desktop
 
 ## Setup
 
@@ -20,7 +20,8 @@ net stop winnat
 net start winnat
 
 # 3. Run the application
-mvn spring-boot:run
+./gradlew bootRun
+./gradlew bootRun --debug-jvm
 ```
 
 - API: `http://localhost:8080`
@@ -43,8 +44,11 @@ docker-compose --env-file .env.dev down -v
 # View container logs
 docker logs taskapi-mssql-dev
 
-# Run tests
-mvn test
+# Gradle commands
+./gradle clean compileJava
+./gradle clean compileTestJava
+./gradle clean test
+./gradle clean build
 ```
 
 ---

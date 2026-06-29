@@ -1,6 +1,7 @@
 package com.example.TaskAPI.core.audit;
 
 import com.example.TaskAPI.infrastructure.security.CustomUserDetails;
+import org.jspecify.annotations.NullMarked;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 @Component
 public class SecurityAuditorAware implements AuditorAware<Long> {
+    @NullMarked
     @Override
     public Optional<Long> getCurrentAuditor() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -5,7 +5,6 @@ import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskAssignee;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
-import com.example.TaskAPI.task.domain.query.TaskPredicateBuilder;
 import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import com.example.TaskAPI.task.mapper.TaskMapper;
 import com.example.TaskAPI.user.domain.entity.User;
@@ -36,8 +35,6 @@ public class TaskServiceTest {
     private TaskRepository taskRepository;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private TaskPredicateBuilder taskPredicateBuilder;
     @InjectMocks
     private TaskService taskService;
 
@@ -49,13 +46,12 @@ public class TaskServiceTest {
                 TaskAssignee.builder()
                         .user(User.builder().uuid(UUID.randomUUID()).build())
                         .build()));
-        Task task = Task.builder()
+
+        return Task.builder()
                 .uuid(uuid)
                 .taskDetail(TaskDetail.builder().build())
                 .taskAssignees(taskAssignees)
                 .build();
-
-        return task;
     }
 
     @Nested
@@ -210,13 +206,13 @@ public class TaskServiceTest {
                     .thenReturn(Optional.of(task));
             when(userRepository.findAllByUuidIn(anyCollection()))
                     .thenReturn(List.of(
-                            taskAssignees.get(0).getUser(),
+                            taskAssignees.getFirst().getUser(),
                             User.builder().uuid(newUserUuid).build()));
             when(taskRepository.save(any(Task.class)))
                     .thenReturn(task);
 
             Task result = taskService.updateTask(uuid, task, Set.of(
-                    taskAssignees.get(0).getUser().getUuid(),
+                    taskAssignees.getFirst().getUser().getUuid(),
                     newUserUuid));
 
             assertThat(result).isNotNull();
@@ -276,13 +272,13 @@ public class TaskServiceTest {
                     .thenReturn(Optional.of(task));
             when(userRepository.findAllByUuidIn(anyCollection()))
                     .thenReturn(List.of(
-                            taskAssignees.get(0).getUser(),
+                            taskAssignees.getFirst().getUser(),
                             User.builder().uuid(newUserUuid).build()));
             when(taskRepository.save(any(Task.class)))
                     .thenReturn(task);
 
             Task result = taskService.updateTaskAssignees(uuid, Set.of(
-                    taskAssignees.get(0).getUser().getUuid(),
+                    taskAssignees.getFirst().getUser().getUuid(),
                     newUserUuid));
 
             assertThat(result).isNotNull();

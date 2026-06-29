@@ -114,7 +114,6 @@ public class TaskControllerTest extends BaseControllerTest {
         @Test
         void getTaskByUuid_found_returnsTask() throws Exception {
             UUID uuid = UUID.randomUUID();
-            TaskResponse.Detail taskResponse = getFullTaskResponse(uuid);
 
             when(taskService.getWithDetailByUuid(any(UUID.class)))
                     .thenReturn(Optional.of(new Task()));

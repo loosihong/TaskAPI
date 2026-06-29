@@ -117,7 +117,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
 
         @Test
         void searchTasks_noFilter_returnsAllTasks() {
-            Task task1 = createTask("Read book", "DONE");
+            createTask("Read book", "DONE");
 
             TaskListFilter taskListFilter = TaskListFilter.builder().build();
             Page<Task> result = taskRepository.findAll(
@@ -137,12 +137,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
                     taskPredicateBuilder.buildPredicate(taskListFilter), getDefaultPageRequest());
 
             assertThat(result.getTotalElements()).isEqualTo(1);
-            assertThat(result.getContent().get(0).getTitle()).isEqualTo(task1.getTitle());
+            assertThat(result.getContent().getFirst().getTitle()).isEqualTo(task1.getTitle());
         }
 
         @Test
         void searchTasks_blankTitle_returnsAllTasks() {
-            Task task = createTask("Read book", "DONE");
+            createTask("Read book", "DONE");
 
             TaskListFilter taskListFilter = TaskListFilter.builder()
                     .title("   ")
@@ -336,12 +336,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
 
         @Test
         void searchTasks_noFilter_returnsAllDashboardItems() {
-            Task task1 = createTask(
+            createTask(
                     "Read book",
                     "TODO",
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
-            Task task2 = createTask(
+            createTask(
                     "Arsenal",
                     "TODO",
                     new ArrayList<>(List.of(assignee)),
@@ -371,12 +371,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
                     assignee.getId());
 
             assertThat(result.getTotalElements()).isEqualTo(1);
-            assertThat(result.getContent().get(0).title()).isEqualTo(task1.getTitle());
+            assertThat(result.getContent().getFirst().title()).isEqualTo(task1.getTitle());
         }
 
         @Test
         void searchTasks_blankTitle_returnDashboardItems() {
-            Task task1 = createTask(
+            createTask(
                     "Read book",
                     "TODO",
                     new ArrayList<>(List.of(assignee)),
@@ -420,12 +420,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
 
         @Test
         void searchTasks_priority_returnDashboardItems() {
-            Task task1 = createTask(
+            createTask(
                     "Read book",
                     "DONE",
                     new ArrayList<>(List.of(assignee)),
                     Priority.MEDIUM);
-            Task task2 = createTask(
+            createTask(
                     "North London forever",
                     "COMPLETED",
                     new ArrayList<>(List.of(assignee)),
@@ -473,12 +473,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
 
         @Test
         void searchTasks_updatedUuids_returnDashboardItems() {
-            Task task1 = createTask(
+            createTask(
                     "Read book",
                     "TODO",
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
-            Task task2 = createTask(
+            createTask(
                     "Arsenal",
                     "TODO",
                     new ArrayList<>(List.of(assignee)),
@@ -619,7 +619,8 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
                     "TODO",
                     List.of(assignee),
                     Priority.MEDIUM);
-            Task task3 = createTask(
+
+            createTask(
                     "Task B",
                     "TODO",
                     List.of(assignee),
@@ -681,11 +682,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> {
 
         @Test
         void searchTasks_sortUpdatedBy_returnsSortedResult() {
-            Task task1 = createTask(
+            createTask(
                     "Task C",
                     "TODO",
                     List.of(assignee),
                     Priority.LOW);
+
             Task task2 = createTask(
                     "Task A",
                     "TODO",

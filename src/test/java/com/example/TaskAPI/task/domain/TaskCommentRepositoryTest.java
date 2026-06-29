@@ -17,14 +17,14 @@ public class TaskCommentRepositoryTest extends BaseEntityRepositoryTest<TaskComm
     private TaskRepository taskRepository;
 
     private TaskComment taskComment;
-    private Task task;
 
     @BeforeEach
     void setup() {
-        task = Task.builder()
+        Task task = Task.builder()
                 .title("Buy groceries")
                 .status("TODO")
                 .build();
+
         taskRepository.saveAndFlush(task);
         taskComment = TaskComment.builder()
                 .comment("procrastinating")
