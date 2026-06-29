@@ -1,0 +1,33 @@
+[versions]
+springBoot = "4.0.4"
+kotlin = "2.4.0"
+jjwt = "0.12.6"
+lombok = "1.18.38"
+lombok-mapstruct-binding = "0.2.0"
+mapstruct = "1.6.3"
+querydsl = "5.1.0"
+springdoc = "3.0.3"
+testcontainers = "1.20.4"
+mockito = "5.20.0"
+
+[libraries]
+# BOM Platforms
+spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+
+# Standard Libraries
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+mapstruct-core = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
+querydsl-jpa = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" }
+querydsl-apt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" }
+springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

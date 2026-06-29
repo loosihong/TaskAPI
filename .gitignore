@@ -1,0 +1,28 @@
+### Build outputs ###
+build/
+out/
+
+### Gradle ###
+.gradle/
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+*.ipr
+
+### MapStruct generated implementations — never commit these ###
+**/*MapperImpl.java
+
+### Environment & secrets ###
+.env
+.env.*
+!.env.*.example
+
+### Logs ###
+*.log
+logs/
+
+### OS ###
+.DS_Store
+Thumbs.db

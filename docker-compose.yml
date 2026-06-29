@@ -1,0 +1,26 @@
+services:
+  mssql-dev:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ${CONTAINER_NAME}
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      APP_USER: ${APP_USER}
+      APP_PASSWORD: ${APP_PASSWORD}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+      - ./docker/mssql/init/entrypoint.sh:/entrypoint.sh
+      - ./docker/mssql/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    entrypoint: /bin/bash /entrypoint.sh
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${MSSQL_SA_PASSWORD}", "-Q", "SELECT 1", "-No" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mssql-data:
