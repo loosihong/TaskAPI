@@ -11,3 +11,9 @@ plugins {
 }
 
 rootProject.name = "TaskAPI"
+
+include("shared", "domain-user", "domain-task", "service-task")
+include("shared")
+include("domain-user")
+include("domain-task")
+include("service-task")
