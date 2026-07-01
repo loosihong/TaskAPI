@@ -1,5 +1,6 @@
 package com.example.TaskAPI.infrastructure.security;
 
+import com.example.TaskAPI.core.audit.AuditablePrincipal;
 import com.example.TaskAPI.user.domain.entity.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,7 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Getter
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, AuditablePrincipal {
     private final Long id;
     private final String username;
     private final String password;
@@ -21,6 +22,11 @@ public class CustomUserDetails implements UserDetails {
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public Long auditorId() {
+        return this.id;
     }
 
     @Override

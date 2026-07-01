@@ -1,6 +1,5 @@
 package com.example.TaskAPI.core.audit;
 
-import com.example.TaskAPI.infrastructure.security.CustomUserDetails;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
@@ -20,9 +19,8 @@ public class SecurityAuditorAware implements AuditorAware<Long> {
             return Optional.empty();
         }
 
-        Object principal = auth.getPrincipal();
-        if (principal instanceof CustomUserDetails userDetails) {
-            return Optional.of(userDetails.getId());
+        if (auth.getPrincipal() instanceof AuditablePrincipal principal) {
+            return Optional.of(principal.auditorId());
         }
 
         return Optional.empty();

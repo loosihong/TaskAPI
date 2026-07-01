@@ -45,10 +45,10 @@ docker-compose --env-file .env.dev down -v
 docker logs taskapi-mssql-dev
 
 # Gradle commands
-./gradle clean compileJava
-./gradle clean compileTestJava
-./gradle clean test
-./gradle clean build
+./gradlew clean compileJava
+./gradlew clean compileTestJava
+./gradlew clean test
+./gradlew clean build
 ```
 
 ---
