@@ -16,6 +16,8 @@ dependencies {
     annotationProcessor(variantOf(libs.querydsl.apt) { classifier("jakarta") })
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
 
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
@@ -31,6 +33,9 @@ dependencies {
     testFixturesCompileOnly(libs.lombok)
     testFixturesAnnotationProcessor(libs.lombok)
 
+    testRuntimeOnly(platform(libs.spring.boot.dependencies))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     mockitoAgent(libs.mockito.core) { isTransitive = false }
 }
 
@@ -39,6 +44,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.withType<Test> {
+    failOnNoDiscoveredTests = false
     useJUnitPlatform()
     systemProperty("java.util.logging.config.file", "src/test/resources/logging.properties")
     doFirst {

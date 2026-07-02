@@ -19,6 +19,7 @@ public abstract class TestcontainersConfig {
                 .acceptLicense()
                 .waitingFor(Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1))
                 .withStartupTimeout(Duration.ofMinutes(3));
+        //.withReuse(true);
         mssql.start();
     }
 

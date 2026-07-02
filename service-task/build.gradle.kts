@@ -63,6 +63,7 @@ dependencies {
 }
 
 tasks.withType<Test> {
+    failOnNoDiscoveredTests = false
     useJUnitPlatform()
     systemProperty("java.util.logging.config.file", "src/test/resources/logging.properties")
     doFirst {

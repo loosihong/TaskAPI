@@ -9,7 +9,9 @@ dependencies {
 
     // BaseEntity/BaseRecord/audit are JPA types every module needs to see -> api.
     api("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation(variantOf(libs.querydsl.jpa) { classifier("jakarta") })
+    api(variantOf(libs.querydsl.jpa) { classifier("jakarta") })
+    annotationProcessor(variantOf(libs.querydsl.apt) { classifier("jakarta") })
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation(libs.mapstruct.core)
     runtimeOnly("com.microsoft.sqlserver:mssql-jdbc")
@@ -32,6 +34,7 @@ dependencies {
     testFixturesApi("org.springframework.boot:spring-boot-testcontainers")
     testFixturesApi("org.testcontainers:mssqlserver")
     testFixturesApi("org.testcontainers:junit-jupiter")
+    testFixturesApi(variantOf(libs.querydsl.jpa) { classifier("jakarta") })
     testFixturesCompileOnly(libs.lombok)
     testFixturesAnnotationProcessor(libs.lombok)
 }

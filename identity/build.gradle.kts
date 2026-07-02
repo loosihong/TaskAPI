@@ -1,32 +1,39 @@
 plugins {
     `java-library`
+    `java-test-fixtures`
 }
 
 val mockitoAgent: Configuration by configurations.creating
 
 dependencies {
-    api(project(":domain-user")) // TaskAssignee -> User; dashboard query joins QUser
-    api(project(":shared"))
+    api(project(":domain-user")) // AuthService.register() returns User
+    api(project(":shared"))      // CustomUserDetails implements AuditablePrincipal
 
     api(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
 
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    api(variantOf(libs.querydsl.jpa) { classifier("jakarta") })
-    annotationProcessor(variantOf(libs.querydsl.apt) { classifier("jakarta") })
-    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+    implementation(libs.jjwt.api)
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
+
+    implementation(libs.springdoc.openapi)
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
-    testImplementation(platform(libs.testcontainers.bom))
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation(testFixtures(project(":shared")))
-    testImplementation(testFixtures(project(":domain-user")))
+
+    // --- testFixtures: AbstractSecuredIntegrationTest, BaseControllerTest ---
+    testFixturesApi(project(":shared"))                 // GlobalExceptionHandler (shared's main)
+    testFixturesApi(testFixtures(project(":shared")))   // TestcontainersConfig (shared's testFixtures)
+    testFixturesApi(platform(libs.spring.boot.dependencies))
+    testFixturesApi("org.springframework.boot:spring-boot-starter-test")
+    testFixturesApi("org.springframework.boot:spring-boot-starter-webmvc-test") // @AutoConfigureMockMvc
 
     testRuntimeOnly(platform(libs.spring.boot.dependencies))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
