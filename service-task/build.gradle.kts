@@ -20,20 +20,16 @@ dependencies {
     implementation(project(":domain-task"))
     implementation(project(":domain-user"))
     implementation(project(":shared"))
-    // JPA, the MSSQL driver, and QueryDSL's runtime types all arrive transitively
-    // through shared / domain-user / domain-task's `api` dependencies above.
+    implementation(project(":identity"))
+    // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
+    // arrive transitively through the modules above - not redeclared here.
 
     implementation(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
     testImplementation(platform(libs.testcontainers.bom))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    implementation(libs.jjwt.api)
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.jackson)
 
     implementation(libs.springdoc.openapi)
 
@@ -51,19 +47,22 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:mssqlserver")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation(testFixtures(project(":shared")))
-    testImplementation(testFixtures(project(":domain-user")))
+    testImplementation(testFixtures(project(":identity")))
+
+    testRuntimeOnly(platform(libs.spring.boot.dependencies))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     mockitoAgent(libs.mockito.core) { isTransitive = false }
 }
 
 tasks.withType<Test> {
-    failOnNoDiscoveredTests = false
     useJUnitPlatform()
     systemProperty("java.util.logging.config.file", "src/test/resources/logging.properties")
     doFirst {
