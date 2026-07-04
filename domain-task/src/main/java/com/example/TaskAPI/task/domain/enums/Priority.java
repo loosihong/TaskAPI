@@ -17,7 +17,9 @@ public enum Priority {
 
     public static Priority fromValue(short value) {
         for (Priority priority : values()) {
-            if (priority.value == value) return priority;
+            if (priority.value == value) {
+                return priority;
+            }
         }
 
         throw new IllegalArgumentException("Unknown Priority value: " + value);
@@ -32,7 +34,7 @@ public enum Priority {
 
         @Override
         public Priority convertToEntityAttribute(Short value) {
-            return value == null ? null : Priority.fromValue(value);
+            return value == null ? null : fromValue(value);
         }
     }
 }

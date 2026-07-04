@@ -1,6 +1,5 @@
 [versions]
 springBoot = "4.0.4"
-kotlin = "2.4.0"
 jjwt = "0.12.6"
 lombok = "1.18.38"
 lombok-mapstruct-binding = "0.2.0"
@@ -30,4 +29,4 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+spotbugs = { id = "com.github.spotbugs", version = "6.5.8" }

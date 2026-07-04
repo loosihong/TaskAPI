@@ -83,7 +83,7 @@ public class TaskRepositoryDashboardImpl implements TaskRepositoryDashboard {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        long totalCount = jpaQueryFactory.select(task.count())
+        Long totalCount = jpaQueryFactory.select(task.count())
                 .from(task)
                 .innerJoin(taskDetail).on(taskDetail.task.id.eq(task.id))
                 .innerJoin(taskAssignee).on(taskAssignee.task.id.eq(task.id))
@@ -91,7 +91,7 @@ public class TaskRepositoryDashboardImpl implements TaskRepositoryDashboard {
                 .where(predicate)
                 .fetchOne();
 
-        return new PageImpl<>(result, pageable, totalCount);
+        return new PageImpl<>(result, pageable, totalCount == null ? 0L : totalCount);
     }
 
     private Predicate buildPredicate(TaskDashboardFilter filter, Long userId) {
@@ -141,7 +141,7 @@ public class TaskRepositoryDashboardImpl implements TaskRepositoryDashboard {
 
     private OrderSpecifier<?> buildOrder(Sort sort) {
         Sort.Order order = sort.stream().findFirst().orElse(Sort.Order.desc(BaseEntity.Fields.updatedAt));
-        Order direction = (order.isAscending() ? Order.ASC : Order.DESC);
+        Order direction = order.isAscending() ? Order.ASC : Order.DESC;
 
         return switch (order.getProperty()) {
             case TaskDashboardItem.Fields.title -> new OrderSpecifier<>(direction, task.title);

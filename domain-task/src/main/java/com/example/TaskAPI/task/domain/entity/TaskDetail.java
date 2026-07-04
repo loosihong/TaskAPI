@@ -3,10 +3,20 @@ package com.example.TaskAPI.task.domain.entity;
 import com.example.TaskAPI.core.model.BaseExtensionEntity;
 import com.example.TaskAPI.core.validation.ValidationError;
 import com.example.TaskAPI.task.domain.enums.Priority;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
@@ -54,7 +64,7 @@ public class TaskDetail extends BaseExtensionEntity {
         public static final class Values {
             public static final int DESCRIPTION_MAX = 1023;
 
-            public Values() {
+            private Values() {
             }
         }
 
@@ -63,7 +73,7 @@ public class TaskDetail extends BaseExtensionEntity {
             public static final String DUE_DATE_FUTURE = "Due Date" + ValidationError.FUTURE;
             public static final String PRIORITY_REQUIRED = "Priority" + ValidationError.REQUIRED;
 
-            public Messages() {
+            private Messages() {
             }
         }
     }

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- Skip all generated sources: QueryDSL Q-classes, MapStruct *Impl,
+         Spring configuration-processor metadata -->
+    <Match>
+        <Source name="~.*[\\/]generated[\\/].*"/>
+    </Match>
+    <Match>
+        <Class name="~.*\.Q[A-Z].*"/>
+    </Match>
+    <Match>
+        <Class name="~.*MapperImpl"/>
+    </Match>
+
+    <!-- EI_EXPOSE_REP / EI_EXPOSE_REP2: SpotBugs flags any getter/constructor that
+         returns or stores a mutable reference directly. This fires constantly on
+         JPA entities, MapStruct-generated DTOs, and Lombok @Data/@Value classes,
+         where exposing the reference is the intended behavior (JPA needs live
+         collection references; DTOs are plain data carriers, not defensively
+         copied by design). -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- SE_BAD_FIELD / SE_NO_SERIALVERSIONID: entities/DTOs aren't intended to be
+         java.io.Serializable; same reasoning as the PMD BeanMembersShouldSerialize
+         exclusion above. -->
+    <Match>
+        <Bug pattern="SE_BAD_FIELD,SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <!-- URF_UNREAD_FIELD: JPA-managed fields (audit columns, @Version, relationship
+         collections) are read reflectively by Hibernate, not by application code
+         SpotBugs can see. -->
+    <Match>
+        <Bug pattern="URF_UNREAD_FIELD"/>
+        <Or>
+            <Class name="~.*\.entity\..*"/>
+            <Class name="~.*\.domain\..*"/>
+        </Or>
+    </Match>
+
+    <!-- EQ_DOESNT_OVERRIDE_EQUALS / HE_EQUALS_USE_HASHCODE on entities: intentional
+         per the dual-ID pattern (Long id + UUID publicId) - entity equality is
+         handled deliberately at the BaseEntity level, not per-subclass. -->
+    <Match>
+        <Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS,HE_EQUALS_USE_HASHCODE"/>
+        <Class name="~.*\.entity\..*"/>
+    </Match>
+
+    <!-- Known, accepted tradeoff: @ManyToOne EAGER fetch is required alongside
+         @SoftDelete (Hibernate limitation, not a bug) - SpotBugs doesn't have a
+         dedicated bug pattern for this, documented here for visibility rather
+         than suppressed per-field with @SuppressFBWarnings. -->
+
+</FindBugsFilter>

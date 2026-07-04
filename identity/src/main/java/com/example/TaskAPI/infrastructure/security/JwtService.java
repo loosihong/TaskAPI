@@ -2,6 +2,7 @@ package com.example.TaskAPI.infrastructure.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
@@ -15,7 +16,7 @@ import java.util.Date;
 import java.util.HexFormat;
 
 @Service
-public class JwtService {
+public final class JwtService {
     private final SecretKey secretKey;
     private final long expirationsMs;
 
@@ -40,7 +41,7 @@ public class JwtService {
         try {
             extractClaims(token);
             return true;
-        } catch (Exception e) {
+        } catch (ExpiredJwtException | JwtProcessingException e) {
             return false;
         }
     }
@@ -54,21 +55,22 @@ public class JwtService {
         return extractClaims(token).getSubject();
     }
 
-    private Claims extractClaims(String token) throws ExpiredJwtException {
+    private Claims extractClaims(String token) {
         try {
             return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-        } catch (ExpiredJwtException ex) {
+        } catch (ExpiredJwtException ex) { // NOPMD
+            // intentional pass-through so ExpiredJwtException isn't wrapped by the catch(Exception) below
             throw ex;
         } catch (SignatureException ex) {
-            throw new RuntimeException("Invalid JWT signature", ex);
+            throw new JwtProcessingException("Invalid JWT signature", ex);
         } catch (MalformedJwtException ex) {
-            throw new RuntimeException("Malformed JWT token", ex);
-        } catch (Exception ex) {
-            throw new RuntimeException("Invalid JWT token", ex);
+            throw new JwtProcessingException("Malformed JWT token", ex);
+        } catch (JwtException | IllegalArgumentException ex) {
+            throw new JwtProcessingException("Invalid JWT token", ex);
         }
     }
 }
