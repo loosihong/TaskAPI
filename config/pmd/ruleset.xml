@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         name="TaskAPI Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+    <description>
+        TaskAPI PMD rules. Pulls from PMD's category rulesets rather than the
+        old "basic"/"unusedcode" bundles (removed in PMD 7). Excludes rules
+        that conflict with Lombok-generated code, MapStruct mappers, records,
+        and the dual-ID (Long id + UUID publicId) entity pattern.
+    </description>
+
+    <!-- Best practices: catches real mistakes, low false-positive rate -->
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="GuardLogStatement"/> <!-- SLF4J already lazy-evaluates with {} placeholders -->
+        <exclude
+                name="JUnitTestsShouldIncludeAssert"/> <!-- false positives on assertJ/BaseRepositoryTest helper assertions -->
+    </rule>
+
+    <!-- Error-prone: highest signal category, keep almost everything -->
+    <rule ref="category/java/errorprone.xml">
+        <exclude
+                name="NonSerializableClass"/> <!-- renamed from BeanMembersShouldSerialize in PMD 6.52+; entities/DTOs aren't java.io.Serializable by design -->
+        <exclude name="MissingSerialVersionUID"/> <!-- same reasoning -->
+    </rule>
+
+    <!-- Code style: kept minimal, most of this overlaps with Checkstyle/IntelliJ formatter -->
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="OnlyOneReturn"/>
+        <exclude name="ShortVariable"/> <!-- fights common loop/lambda vars: i, id, dto -->
+        <exclude name="ShortClassName"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="AtLeastOneConstructor"/> <!-- Lombok generates constructors; records don't need explicit ones -->
+        <exclude name="CommentDefaultAccessModifier"/>
+        <exclude
+                name="PackageCase"/> <!-- root package com.example.TaskAPI is an established, deliberate naming choice -->
+        <exclude
+                name="LongVariable"/> <!-- descriptive names (taskDashboardFilter, assigneeNamesSubQuery) preferred over brevity -->
+    </rule>
+
+    <!-- Design: useful for catching god-classes/deep coupling as modules grow -->
+    <rule ref="category/java/design.xml">
+        <exclude name="LawOfDemeter"/> <!-- too strict for fluent builder chains (Lombok, QueryDSL, MapStruct) -->
+        <exclude name="TooManyMethods"/> <!-- controllers/services legitimately grow past PMD's default threshold -->
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="DataClass"/> <!-- Lombok @Getter/@Setter DTOs are intentionally data-only -->
+        <exclude
+                name="FinalFieldCouldBeStatic"/> <!-- QTask/QTaskDetail/etc. instance fields intentional for QueryDSL alias scoping, not shared state -->
+    </rule>
+
+    <!-- Multithreading: relevant since JobRunr introduces background jobs -->
+    <rule ref="category/java/multithreading.xml">
+        <exclude name="DoNotUseThreads"/> <!-- JobRunr and Spring's async infra manage threads for us -->
+    </rule>
+
+    <!-- Performance -->
+    <rule ref="category/java/performance.xml"/>
+
+    <!-- Security -->
+    <rule ref="category/java/security.xml"/>
+
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="999"/>
+            <property name="methodReportLevel" value="20"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/design.xml/NPathComplexity">
+        <properties>
+            <property name="reportLevel" value="1500"/>
+        </properties>
+    </rule>
+
+    <!-- Documentation: off entirely during active refactor, same reasoning as Checkstyle -->
+
+</ruleset>

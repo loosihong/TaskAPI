@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    TaskAPI Checkstyle rules.
+    Intentionally lighter than google_checks/sun_checks: this project leans on
+    Lombok, MapStruct, QueryDSL, and records, all of which generate or rely on
+    code Checkstyle can't see the intent behind. Rules here focus on things
+    that are unambiguously worth catching (unused imports, whitespace,
+    line length, naming) rather than stylistic opinions that fight the stack.
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- Skip generated sources: QueryDSL Q-classes, MapStruct *Impl, annotation processor output -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="[\\/]generated[\\/]"/>
+    </module>
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="Q[A-Z].*\.java$"/>
+    </module>
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value=".*MapperImpl\.java$"/>
+    </module>
+
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^import .*|^package .*"/>
+    </module>
+
+    <module name="FileTabCharacter"/>
+
+    <module name="TreeWalker">
+        <!-- Imports -->
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+        <module name="AvoidStarImport"/>
+
+        <!-- Naming conventions -->
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="LocalVariableName"/>
+        <module name="ConstantName">
+            <!-- Inner Fields/Constraints/Table constant classes use PascalCase-friendly
+                 naming, not SCREAMING_SNAKE_CASE -->
+            <property name="format" value="^[a-zA-Z][a-zA-Z0-9_]*$"/>
+        </module>
+        <module name="PackageName"/>
+
+        <!-- Whitespace/formatting: IntelliJ's formatter already enforces these;
+             kept here so CI catches anyone who skipped reformat-on-commit -->
+        <module name="WhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="LeftCurly"/>
+        <module name="RightCurly"/>
+
+        <!-- Real bug risk, not style -->
+        <module name="EqualsHashCode"/>
+        <module name="EmptyCatchBlock">
+            <property name="commentFormat" value="expected|ignore"/>
+        </module>
+        <module name="FallThrough"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="StringLiteralEquality"/>
+
+        <!-- Deliberately NOT enabled, and why:
+             - JavadocMethod/JavadocType: not enforcing during active refactor.
+             - MagicNumber: too noisy against legitimate domain constants
+               (HTTP status codes, pagination defaults, JWT expiry seconds).
+             - DesignForExtension/FinalClass: fights Spring proxying and
+               MapStruct/Lombok-generated subclasses.
+             - HiddenField: Lombok @Builder/@AllArgsConstructor params
+               intentionally shadow field names. -->
+    </module>
+</module>

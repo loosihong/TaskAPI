@@ -24,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final SecurityContextRepository securityContentRepository = new RequestAttributeSecurityContextRepository();
 
     public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+        super();
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }

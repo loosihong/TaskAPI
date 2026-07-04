@@ -1,16 +1,9 @@
 plugins {
     java
     alias(libs.plugins.spring.boot)
-    alias(libs.plugins.kotlin.jvm)
 }
 
 val mockitoAgent: Configuration by configurations.creating
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_25)
-    }
-}
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Xlint:unchecked", "-Xlint:deprecation"))
@@ -36,8 +29,6 @@ dependencies {
     implementation(libs.mapstruct.core)
     compileOnly(libs.lombok)
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.lombok.mapstruct.binding)
     annotationProcessor(libs.mapstruct.processor)
@@ -52,7 +43,6 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation(testFixtures(project(":shared")))
     testImplementation(testFixtures(project(":identity")))
 
