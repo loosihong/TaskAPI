@@ -4,9 +4,12 @@ import com.example.TaskAPI.core.BaseControllerTest;
 import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.api.dto.TaskCommentResponse;
+import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskComment;
+import com.example.TaskAPI.task.domain.query.TaskCommentListItem;
 import com.example.TaskAPI.task.mapper.TaskCommentMapper;
 import com.example.TaskAPI.task.service.TaskCommentService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -14,11 +17,17 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +50,80 @@ public class TaskCommentControllerTest extends BaseControllerTest {
         return TaskCommentRequest.Detail.builder()
                 .uuid(uuid)
                 .build();
+    }
+
+    @Nested
+    @DisplayName("/tasks/comments")
+    class TaskCommentTest {
+        UUID uuid;
+        UUID taskUuid;
+
+        @BeforeEach
+        void setUp() {
+            uuid = UUID.randomUUID();
+            taskUuid = UUID.randomUUID();
+        }
+
+        @Test
+        void getTaskCommentListItemsByTaskUuid_Found_returnsTaskComments() throws Exception {
+            when(taskCommentService.getTaskCommentsListItemsByTaskUuid(taskUuid))
+                    .thenReturn(List.of(
+                            TaskCommentListItem.builder().build(),
+                            TaskCommentListItem.builder().build()));
+
+            mockMvc.perform(get("/tasks/{taskUuid}/comments", taskUuid)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(2));
+        }
+
+        @Test
+        void getTaskCommentListItemsByTaskUuid_NotFound_returns404() throws Exception {
+            when(taskCommentService.getTaskCommentsListItemsByTaskUuid(taskUuid))
+                    .thenThrow(new EntityNotFoundException(Task.class, taskUuid));
+
+            mockMvc.perform(get("/tasks/{taskUuid}/comments", taskUuid))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void createTaskComment_foundTask_returnsTaskComment() throws Exception {
+            when(taskCommentService.createTaskComment(eq(taskUuid), any(TaskComment.class)))
+                    .thenReturn(new TaskComment());
+            when(taskCommentMapper.toEntity(any(TaskCommentRequest.Detail.class)))
+                    .thenReturn(new TaskComment());
+            when(taskCommentMapper.toResponse(any(TaskComment.class)))
+                    .thenReturn(getTaskCommentResponse(uuid));
+
+            mockMvc.perform(post("/tasks/{taskUuid}/comments", taskUuid)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(getTaskCommentRequest(uuid))))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.uuid").value(uuid.toString()));
+        }
+
+        @Test
+        void createTaskComment_invalid_returnsBadRequest() throws Exception {
+            mockMvc.perform(post("/tasks/{taskUuid}/comments", UUID.randomUUID())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    TaskCommentRequest.Detail.builder()
+                                            .comment("a".repeat(2048))
+                                            .build())))
+                    .andExpect(status().isBadRequest());
+        }
+
+        private TaskCommentRequest.Detail getTaskCommentRequest(UUID uuid) {
+            return TaskCommentRequest.Detail.builder()
+                    .uuid(uuid)
+                    .build();
+        }
+
+        private TaskCommentResponse.Detail getTaskCommentResponse(UUID uuid) {
+            return TaskCommentResponse.Detail.builder()
+                    .uuid(uuid)
+                    .build();
+        }
     }
 
     @Nested

@@ -1,7 +1,11 @@
 package com.example.TaskAPI.task.api;
 
 import com.example.TaskAPI.core.BaseIntegrationTest;
-import com.example.TaskAPI.task.api.dto.*;
+import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
+import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
+import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
+import com.example.TaskAPI.task.api.dto.TaskListSearchRequest;
+import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.enums.Priority;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
@@ -15,7 +19,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -119,30 +126,6 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
     void anyEndpoint_unauthenticated_returns401() throws Exception {
         mockMvc.perform(get("/tasks"))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void getTaskCommentListItemsByTaskUuid_returnsPersistedTaskComments() throws Exception {
-        UUID taskUuid = createTask(getTaskRequest());
-        createTaskComment(taskUuid, getTaskCommentRequest());
-        createTaskComment(taskUuid, getTaskCommentRequest());
-
-        mockMvc.perform(get("/tasks/{taskUuid}/comments", taskUuid)
-                        .with(authenticated()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
-    }
-
-    @Test
-    void createTaskComment_returnsTaskComment() throws Exception {
-        UUID taskUuid = createTask(getTaskRequest());
-
-        mockMvc.perform(post("/tasks/{taskUuid}/comments", taskUuid)
-                        .with(authenticated())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(getTaskCommentRequest())))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.uuid").exists());
     }
 
     @Test
@@ -256,11 +239,6 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                 .build();
     }
 
-    private TaskCommentRequest.Detail getTaskCommentRequest() {
-        return TaskCommentRequest.Detail.builder()
-                .comment("Arsenal")
-                .build();
-    }
 
     private UUID createTask(TaskRequest.Detail taskRequest) throws Exception {
         return UUID.fromString(objectMapper.readTree(
@@ -268,16 +246,6 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                                         .with(authenticated())
                                         .contentType(MediaType.APPLICATION_JSON)
                                         .content(objectMapper.writeValueAsString(taskRequest)))
-                                .andReturn().getResponse().getContentAsString())
-                .get("uuid").asString());
-    }
-
-    private UUID createTaskComment(UUID taskUuid, TaskCommentRequest.Detail taskCommentRequest) throws Exception {
-        return UUID.fromString(objectMapper.readTree(
-                        mockMvc.perform(post("/tasks/{taskUuid}/comments", taskUuid)
-                                        .with(authenticated())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(taskCommentRequest)))
                                 .andReturn().getResponse().getContentAsString())
                 .get("uuid").asString());
     }

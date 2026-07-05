@@ -8,11 +8,38 @@ import org.springframework.http.MediaType;
 
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class TaskCommentControllerIntegrationTest extends BaseIntegrationTest {
+    @Test
+    void getTaskCommentListItemsByTaskUuid_returnsPersistedTaskComments() throws Exception {
+        UUID taskUuid = createTask(validTaskRequest());
+        createTaskComment(taskUuid, getTaskCommentRequest());
+        createTaskComment(taskUuid, getTaskCommentRequest());
+
+        mockMvc.perform(get("/tasks/{taskUuid}/comments", taskUuid)
+                        .with(authenticated()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    void createTaskComment_returnsTaskComment() throws Exception {
+        UUID taskUuid = createTask(validTaskRequest());
+
+        mockMvc.perform(post("/tasks/{taskUuid}/comments", taskUuid)
+                        .with(authenticated())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(getTaskCommentRequest())))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.uuid").exists());
+    }
+
     @Test
     void updateTaskComment_returnsTaskComment() throws Exception {
         UUID taskUuid = createTask(validTaskRequest());
@@ -58,6 +85,12 @@ public class TaskCommentControllerIntegrationTest extends BaseIntegrationTest {
     }
 
     private TaskCommentRequest.Detail validTaskCommentRequest() {
+        return TaskCommentRequest.Detail.builder()
+                .comment("Arsenal")
+                .build();
+    }
+
+    private TaskCommentRequest.Detail getTaskCommentRequest() {
         return TaskCommentRequest.Detail.builder()
                 .comment("Arsenal")
                 .build();

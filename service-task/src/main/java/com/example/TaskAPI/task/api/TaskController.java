@@ -1,12 +1,15 @@
 package com.example.TaskAPI.task.api;
 
 import com.example.TaskAPI.core.model.BaseEntity;
-import com.example.TaskAPI.task.api.dto.*;
-import com.example.TaskAPI.task.domain.query.TaskCommentListItem;
+import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
+import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
+import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
+import com.example.TaskAPI.task.api.dto.TaskDetailResponse;
+import com.example.TaskAPI.task.api.dto.TaskListSearchRequest;
+import com.example.TaskAPI.task.api.dto.TaskRequest;
+import com.example.TaskAPI.task.api.dto.TaskResponse;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
-import com.example.TaskAPI.task.mapper.TaskCommentMapper;
 import com.example.TaskAPI.task.mapper.TaskMapper;
-import com.example.TaskAPI.task.service.TaskCommentService;
 import com.example.TaskAPI.task.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +17,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,18 +38,12 @@ public class TaskController {
 
     private final TaskService taskService;
     private final TaskMapper taskMapper;
-    private final TaskCommentService taskCommentService;
-    private final TaskCommentMapper taskCommentMapper;
 
     public TaskController(
             TaskService taskService,
-            TaskMapper taskMapper,
-            TaskCommentService taskCommentService,
-            TaskCommentMapper taskCommentMapper) {
+            TaskMapper taskMapper) {
         this.taskService = taskService;
         this.taskMapper = taskMapper;
-        this.taskCommentService = taskCommentService;
-        this.taskCommentMapper = taskCommentMapper;
     }
 
     @Operation(summary = "Get all tasks", description = "Returns a list of all tasks")
@@ -122,25 +126,6 @@ public class TaskController {
         return ResponseEntity.ok(
                 taskMapper.toTaskDetailResponse(
                         taskService.updateTaskDetail(uuid, taskMapper.toEntity(taskDetailRequest))));
-    }
-
-    @GetMapping("/{taskUuid}/comments")
-    public ResponseEntity<List<TaskCommentListItem>> getTaskCommentsListItemByTaskUuid(
-            @PathVariable UUID taskUuid) {
-        return ResponseEntity.ok(
-                taskCommentService.getTaskCommentsListItemsByTaskUuid(taskUuid));
-    }
-
-    @PostMapping("/{taskUuid}/comments")
-    public ResponseEntity<TaskCommentResponse.Detail> createTaskComment(
-            @PathVariable UUID taskUuid,
-            @Valid @RequestBody TaskCommentRequest.Detail taskCommentRequest) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(taskCommentMapper.toResponse(
-                        taskCommentService.createTaskComment(
-                                taskUuid,
-                                taskCommentMapper.toEntity(taskCommentRequest))));
     }
 
     @PutMapping("/{taskUuid}/assignees")

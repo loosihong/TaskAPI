@@ -16,6 +16,10 @@
         <exclude name="GuardLogStatement"/> <!-- SLF4J already lazy-evaluates with {} placeholders -->
         <exclude
                 name="JUnitTestsShouldIncludeAssert"/> <!-- false positives on assertJ/BaseRepositoryTest helper assertions -->
+        <exclude
+                name="UnusedAssignment"/> <!-- false positive on record compact-constructor field normalization (assigneeUuids = ... pattern) -->
+        <exclude
+                name="UseVarargs"/> <!-- main(String[] args) is JVM/Spring Boot launcher contract, not a call site with ergonomic benefit from varargs -->
     </rule>
 
     <!-- Error-prone: highest signal category, keep almost everything -->
@@ -48,6 +52,8 @@
         <exclude name="DataClass"/> <!-- Lombok @Getter/@Setter DTOs are intentionally data-only -->
         <exclude
                 name="FinalFieldCouldBeStatic"/> <!-- QTask/QTaskDetail/etc. instance fields intentional for QueryDSL alias scoping, not shared state -->
+        <exclude
+                name="UseUtilityClass"/> <!-- @SpringBootApplication entry point classes match the "only static methods" heuristic but aren't utility classes -->
     </rule>
 
     <!-- Multithreading: relevant since JobRunr introduces background jobs -->

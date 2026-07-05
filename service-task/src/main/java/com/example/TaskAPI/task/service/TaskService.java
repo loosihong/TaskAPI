@@ -19,7 +19,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
 
 @Service
 public class TaskService {
@@ -122,8 +127,8 @@ public class TaskService {
             return;
         }
 
-        Set<User> users = (assigneeUuids.isEmpty() ? new HashSet<>()
-                : new HashSet<>(userRepository.findAllByUuidIn(assigneeUuids)));
+        Set<User> users = assigneeUuids.isEmpty() ? new HashSet<>()
+                : new HashSet<>(userRepository.findAllByUuidIn(assigneeUuids));
 
         if (users.size() != assigneeUuids.size()) {
             throw new DataValidationException(User.class,
