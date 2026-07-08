@@ -20,6 +20,8 @@
                 name="UnusedAssignment"/> <!-- false positive on record compact-constructor field normalization (assigneeUuids = ... pattern) -->
         <exclude
                 name="UseVarargs"/> <!-- main(String[] args) is JVM/Spring Boot launcher contract, not a call site with ergonomic benefit from varargs -->
+        <exclude
+                name="AbstractClassWithoutAbstractMethod"/> <!-- @MappedSuperclass base entities (BaseEntity) and test base classes are abstract purely to prevent direct instantiation -->
     </rule>
 
     <!-- Error-prone: highest signal category, keep almost everything -->
@@ -27,6 +29,8 @@
         <exclude
                 name="NonSerializableClass"/> <!-- renamed from BeanMembersShouldSerialize in PMD 6.52+; entities/DTOs aren't java.io.Serializable by design -->
         <exclude name="MissingSerialVersionUID"/> <!-- same reasoning -->
+        <exclude
+                name="AvoidAccessibilityAlteration"/> <!-- rule's recommended fix (wrap in AccessController.doPrivileged) is a no-op on JDK 24+, since Security Manager is permanently disabled (JEP 486); setAccessible() here is required for reading @AuditableField-annotated fields regardless of visibility -->
     </rule>
 
     <!-- Code style: kept minimal, most of this overlaps with Checkstyle/IntelliJ formatter -->
@@ -42,6 +46,7 @@
                 name="PackageCase"/> <!-- root package com.example.TaskAPI is an established, deliberate naming choice -->
         <exclude
                 name="LongVariable"/> <!-- descriptive names (taskDashboardFilter, assigneeNamesSubQuery) preferred over brevity -->
+        <exclude name="FieldNamingConventions"/> <!-- overridden standalone below to exempt 'log' -->
     </rule>
 
     <!-- Design: useful for catching god-classes/deep coupling as modules grow -->
@@ -54,11 +59,16 @@
                 name="FinalFieldCouldBeStatic"/> <!-- QTask/QTaskDetail/etc. instance fields intentional for QueryDSL alias scoping, not shared state -->
         <exclude
                 name="UseUtilityClass"/> <!-- @SpringBootApplication entry point classes match the "only static methods" heuristic but aren't utility classes -->
+        <exclude
+                name="ExcessiveImports"/> <!-- BaseEntity legitimately combines JPA lifecycle, Lombok codegen, Spring Data auditing, soft-delete, and audit-snapshot reflection - a foundational base class, not a candidate for further splitting -->
     </rule>
 
     <!-- Multithreading: relevant since JobRunr introduces background jobs -->
     <rule ref="category/java/multithreading.xml">
         <exclude name="DoNotUseThreads"/> <!-- JobRunr and Spring's async infra manage threads for us -->
+        <exclude
+                name="UseConcurrentHashMap"/> <!-- flagged maps are all method-local, freshly created per request/thread invocation, never shared -->
+
     </rule>
 
     <!-- Performance -->
@@ -76,6 +86,11 @@
     <rule ref="category/java/design.xml/NPathComplexity">
         <properties>
             <property name="reportLevel" value="1500"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/codestyle.xml/FieldNamingConventions">
+        <properties>
+            <property name="exclusions" value="log,serialVersionUID"/>
         </properties>
     </rule>
 

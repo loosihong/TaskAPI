@@ -2,7 +2,6 @@ package com.example.TaskAPI.infrastructure.config;
 
 import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.core.audit.ReflectionAuditListener;
-import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -17,8 +16,6 @@ public class AuditTestConfig {
     private static final ThreadLocal<Long> CURRENT_AUDITOR = ThreadLocal.withInitial(() -> 1L);
     @Autowired
     private AuditLogRepository auditLogRepository;
-    @Autowired
-    private EntityManager entityManager;
 
     public static void setCurrentAuditor(Long userId) {
         CURRENT_AUDITOR.set(userId);
@@ -35,6 +32,6 @@ public class AuditTestConfig {
 
     @EventListener(ContextRefreshedEvent.class)
     public void initaliseAuditListener() {
-        new ReflectionAuditListener().init(entityManager, auditLogRepository);
+        new ReflectionAuditListener().init(auditLogRepository);
     }
 }

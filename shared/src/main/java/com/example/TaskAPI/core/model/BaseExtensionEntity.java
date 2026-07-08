@@ -3,13 +3,23 @@ package com.example.TaskAPI.core.model;
 import com.example.TaskAPI.core.audit.Auditable;
 import com.example.TaskAPI.core.audit.ReflectionAuditListener;
 import com.example.TaskAPI.core.audit.annotation.AuditableField;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.Transient;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -27,6 +37,7 @@ import java.util.Map;
 @FieldNameConstants
 @EntityListeners({AuditingEntityListener.class, ReflectionAuditListener.class})
 public abstract class BaseExtensionEntity {
+    private static final Logger log = LoggerFactory.getLogger(BaseExtensionEntity.class);
     @Transient
     private final Map<String, Object> snapshot = new HashMap<>();
     @Id
@@ -55,7 +66,8 @@ public abstract class BaseExtensionEntity {
                     field.setAccessible(true);
                     snapshot.put(field.getName(), field.get(this));
                 } catch (IllegalAccessException ex) {
-                    //TODO: Log error
+                    log.warn("Failed to read auditable field '{}' on entity '{}' for audit logging",
+                            field.getName(), this.getClass().getSimpleName(), ex);
                 }
             }
         }
