@@ -7,6 +7,8 @@ import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -17,7 +19,8 @@ import java.util.Objects;
 @Component
 public class ReflectionAuditListener {
     private static final Logger log = LoggerFactory.getLogger(ReflectionAuditListener.class);
-    private static AuditLogRepository auditLogRepository;
+    private static ApplicationEventPublisher eventPublisher;
+    private static AuditorAware<Long> auditorAware;
 
     @SuppressFBWarnings(
             value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
@@ -25,8 +28,10 @@ public class ReflectionAuditListener {
                     + "which bypasses Spring's IoC container entirely"
     )
     @Autowired
-    public void init(AuditLogRepository auditLogRepository) {
-        ReflectionAuditListener.auditLogRepository = auditLogRepository;
+    public void init(ApplicationEventPublisher eventPublisher, AuditorAware<Long> auditorAware) {
+
+        ReflectionAuditListener.eventPublisher = eventPublisher;
+        ReflectionAuditListener.auditorAware = auditorAware;
     }
 
     @PreUpdate
@@ -35,12 +40,7 @@ public class ReflectionAuditListener {
                 && (entity instanceof Auditable auditable))) {
             return;
         }
-
-        AuditLog auditLog = AuditLog.builder()
-                .entityName(entity.getClass().getSimpleName())
-                .entityUuid(auditable.getUuid())
-                .build();
-        List<AuditFieldLog> auditFieldLogs = new ArrayList<>();
+        List<AuditEntry.FieldDiff> fieldDiffs = new ArrayList<>();
 
         for (Field field : entity.getClass().getDeclaredFields()) {
             if (!field.isAnnotationPresent(AuditableField.class)) {
@@ -59,21 +59,22 @@ public class ReflectionAuditListener {
                 AuditableField annotation = field.getAnnotation(AuditableField.class);
                 String fieldLabel = annotation.displayName().isEmpty() ?
                         field.getName() : annotation.displayName();
-                auditFieldLogs.add(AuditFieldLog.builder()
-                        .fieldName(fieldLabel)
-                        .oldValue(String.valueOf(oldValue))
-                        .newValue(String.valueOf(newValue))
-                        .auditLog(auditLog)
-                        .build());
+                fieldDiffs.add(new AuditEntry.FieldDiff(
+                        fieldLabel,
+                        String.valueOf(oldValue),
+                        String.valueOf(newValue)));
             } catch (IllegalAccessException ex) {
                 log.warn("Failed to read auditable field '{}' on entity '{}' for audit logging",
                         field.getName(), entity.getClass().getSimpleName(), ex);
             }
         }
 
-        if (!auditFieldLogs.isEmpty()) {
-            auditLog.setAuditFieldLogs(auditFieldLogs);
-            auditLogRepository.save(auditLog);
+        if (!fieldDiffs.isEmpty()) {
+            eventPublisher.publishEvent(new AuditEntry(
+                    entity.getClass().getSimpleName(),
+                    auditable.getUuid(),
+                    auditorAware.getCurrentAuditor().orElse(null),
+                    fieldDiffs));
         }
     }
 }

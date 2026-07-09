@@ -19,10 +19,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.SoftDelete;
 import org.hibernate.type.NumericBooleanConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -35,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,7 +44,6 @@ import java.util.UUID;
 @EntityListeners({AuditingEntityListener.class, ReflectionAuditListener.class})
 @SoftDelete(columnName = "is_deleted", converter = NumericBooleanConverter.class)
 public abstract class BaseEntity {
-    private static final Logger log = LoggerFactory.getLogger(BaseEntity.class);
     @Transient
     private final Map<String, Object> snapshot = new HashMap<>();
     @Id

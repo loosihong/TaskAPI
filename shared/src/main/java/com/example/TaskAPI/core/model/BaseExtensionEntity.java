@@ -18,8 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -29,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,7 +37,6 @@ import java.util.Map;
 @FieldNameConstants
 @EntityListeners({AuditingEntityListener.class, ReflectionAuditListener.class})
 public abstract class BaseExtensionEntity {
-    private static final Logger log = LoggerFactory.getLogger(BaseExtensionEntity.class);
     @Transient
     private final Map<String, Object> snapshot = new HashMap<>();
     @Id
