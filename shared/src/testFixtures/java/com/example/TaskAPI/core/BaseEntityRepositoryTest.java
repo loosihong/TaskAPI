@@ -1,7 +1,6 @@
 package com.example.TaskAPI.core;
 
-import com.example.TaskAPI.core.audit.AuditFieldLog;
-import com.example.TaskAPI.core.audit.AuditLog;
+import com.example.TaskAPI.core.audit.AuditEntry;
 import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.core.model.repository.BaseEntityRepository;
@@ -11,18 +10,26 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
+@RecordApplicationEvents
 public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends BaseRepositoryTest {
     @Autowired
     private AuditLogRepository auditLogRepository;
+    @Autowired
+    private ApplicationEvents applicationEvents;
 
     protected void assertCreationData(T entity) {
         assertThat(entity.getVersion()).isEqualTo(0L);
@@ -98,23 +105,23 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
 
             repository.saveAndFlush(entity);
 
-            List<AuditLog> auditLogs = auditLogRepository.findByEntityUuid(entity.getUuid());
+            UUID entityUuid = entity.getUuid();
+            List<AuditEntry.FieldDiff> fieldDiffs = applicationEvents.stream(AuditEntry.class)
+                    .filter(event -> event.entityUUID().equals(entityUuid))
+                    .flatMap(event -> event.fieldDiffs().stream())
+                    .toList();
 
-            assertThat(auditLogs).isNotEmpty();
-
-            List<AuditFieldLog> auditFieldLogs = auditLogs.getLast().getAuditFieldLogs();
-
-            assertThat(auditFieldLogs).isNotEmpty();
+            assertThat(fieldDiffs).isNotEmpty();
 
             for (int i = 0; i < updateFieldValuePairs.size(); i++) {
                 Pair<String, Object> fieldValuePair = updateFieldValuePairs.get(i);
                 int finalI = i;
 
-                assertThat(auditFieldLogs)
-                        .anySatisfy(fieldLog -> {
-                            assertThat(fieldLog.getFieldName()).isEqualTo(fieldValuePair.getFirst());
-                            assertThat(fieldLog.getOldValue()).isEqualTo(oldValues.get(finalI));
-                            assertThat(fieldLog.getNewValue()).isEqualTo(fieldValuePair.getSecond());
+                assertThat(fieldDiffs)
+                        .anySatisfy(fieldDiff -> {
+                            assertThat(fieldDiff.fieldName()).isEqualTo(fieldValuePair.getFirst());
+                            assertThat(fieldDiff.oldValue()).isEqualTo(oldValues.get(finalI));
+                            assertThat(fieldDiff.newValue()).isEqualTo(fieldValuePair.getSecond());
                         });
             }
         }

@@ -1,7 +1,6 @@
 package com.example.TaskAPI.infrastructure.config;
 
 import com.example.TaskAPI.core.audit.ReflectionAuditListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -14,10 +13,6 @@ import java.util.Optional;
 @TestConfiguration
 public class AuditTestConfig {
     private static final ThreadLocal<Long> CURRENT_AUDITOR = ThreadLocal.withInitial(() -> 1L);
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-    @Autowired
-    private AuditorAware<Long> auditorAware;
 
     public static void setCurrentAuditor(Long userId) {
         CURRENT_AUDITOR.set(userId);
@@ -33,7 +28,9 @@ public class AuditTestConfig {
     }
 
     @EventListener(ContextRefreshedEvent.class)
-    public void initaliseAuditListener() {
+    public void initaliseAuditListener(ContextRefreshedEvent event) {
+        ApplicationEventPublisher eventPublisher = event.getApplicationContext();
+        AuditorAware<Long> auditorAware = event.getApplicationContext().getBean(AuditorAware.class);
         new ReflectionAuditListener().init(eventPublisher, auditorAware);
     }
 }

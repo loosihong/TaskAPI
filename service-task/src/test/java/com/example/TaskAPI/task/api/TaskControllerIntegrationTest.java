@@ -222,6 +222,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                         .value(taskRequest1.taskDetail().priority().toString()))
                 .andExpect(jsonPath("$.content[0].updatedByName").value(loginUser.getUsername()));
     }
+    
 
     private TaskRequest.Detail getTaskRequest() {
         return TaskRequest.Detail.builder()
