@@ -1,6 +1,7 @@
 package com.example.TaskAPI.task.api;
 
 import com.example.TaskAPI.core.BaseIntegrationTest;
+import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
 import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
 import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
@@ -11,22 +12,29 @@ import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
 import com.example.TaskAPI.user.domain.entity.User;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 public class TaskControllerIntegrationTest extends BaseIntegrationTest {
+    @Autowired
+    private AuditLogRepository auditLogRepository;
+
     @Test
     void getAllTasks_returnsPersistedTasks() throws Exception {
         createTask(getTaskRequest());
@@ -120,6 +128,25 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                         .content(objectMapper.writeValueAsString(taskDetailRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("North London forever"));
+    }
+
+    @Test
+    void updateTask_persistsAuditLogAsync() throws Exception {
+        UUID uuid = createTask(getTaskRequest());
+
+        mockMvc.perform(put("/tasks/{uuid}", uuid)
+                        .with(authenticated())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                TaskRequest.Detail.builder()
+                                        .uuid(uuid)
+                                        .title("updated")
+                                        .status("IN_PROGRESS")
+                                        .build())))
+                .andExpect(status().isOk());
+
+        await().atMost(Duration.ofSeconds(2))
+                .untilAsserted(() -> assertThat(auditLogRepository.findByEntityUuid(uuid)).isNotEmpty());
     }
 
     @Test
@@ -222,7 +249,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                         .value(taskRequest1.taskDetail().priority().toString()))
                 .andExpect(jsonPath("$.content[0].updatedByName").value(loginUser.getUsername()));
     }
-    
+
 
     private TaskRequest.Detail getTaskRequest() {
         return TaskRequest.Detail.builder()

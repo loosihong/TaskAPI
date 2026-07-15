@@ -134,8 +134,6 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
             return;
         }
 
-        long countBefore = auditLogRepository.count();
-
         Optional<T> optionalEntity = repository.findById(entity.getId());
 
         if (optionalEntity.isPresent()) {
@@ -147,7 +145,13 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
 
             repository.saveAndFlush(entity);
 
-            assertThat(auditLogRepository.count()).isEqualTo(countBefore);
+            UUID entityUuid = entity.getUuid();
+            List<AuditEntry.FieldDiff> fieldDiffs = applicationEvents.stream(AuditEntry.class)
+                    .filter(event -> event.entityUUID().equals(entityUuid))
+                    .flatMap(event -> event.fieldDiffs().stream())
+                    .toList();
+
+            assertThat(fieldDiffs.size()).isEqualTo(0);
         }
     }
 
