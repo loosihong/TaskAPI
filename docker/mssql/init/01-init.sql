@@ -1,17 +1,32 @@
-IF NOT EXISTS (SELECT name
-               FROM sys.databases
-               WHERE name = '$(DB_NAME)')
-    BEGIN
-        EXEC ('CREATE DATABASE [$(DB_NAME)]');
-    END
+IF NOT EXISTS (
+   SELECT name
+   FROM sys.databases
+   WHERE name = '$(DB_NAME)'
+)
+BEGIN
+    EXEC ('CREATE DATABASE [$(DB_NAME)]');
+END
 GO
 
-IF NOT EXISTS (SELECT name
-               FROM sys.server_principals
-               WHERE name = '$(APP_USER)')
-    BEGIN
-        EXEC ('CREATE LOGIN [$(APP_USER)] WITH PASSWORD = ''$(APP_PASSWORD)''');
-    END
+IF EXISTS (
+    SELECT name
+   FROM sys.databases
+   WHERE name = '$(DB_NAME)'
+        AND is_read_committed_snapshot_on = 0
+)
+BEGIN
+    EXEC ('ALTER DATABASE [$(DB_NAME)] SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE');
+END
+GO
+
+IF NOT EXISTS (
+    SELECT name
+    FROM sys.server_principals
+    WHERE name = '$(APP_USER)'
+)
+BEGIN
+    EXEC ('CREATE LOGIN [$(APP_USER)] WITH PASSWORD = ''$(APP_PASSWORD)''');
+END
 GO
 
 DECLARE @CreateUserSql NVARCHAR(MAX);

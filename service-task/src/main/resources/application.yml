@@ -10,6 +10,12 @@ spring:
     show-sql: ${JPA_SHOW_SQL}
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO}
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
+      table-prefix: BATCH_
 
 springdoc:
   api-docs:

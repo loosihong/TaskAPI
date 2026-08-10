@@ -23,6 +23,7 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-batch-jdbc")
 
     implementation(libs.springdoc.openapi)
     implementation(libs.jobrunr.spring)
@@ -34,17 +35,19 @@ dependencies {
     annotationProcessor(libs.mapstruct.processor)
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    testImplementation(testFixtures(project(":shared")))
+    testImplementation(testFixtures(project(":identity")))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-batch-jdbc-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.testcontainers:mssqlserver")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
-    testImplementation(testFixtures(project(":shared")))
-    testImplementation(testFixtures(project(":identity")))
+
 
     testRuntimeOnly(platform(libs.spring.boot.dependencies))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

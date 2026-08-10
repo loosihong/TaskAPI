@@ -23,11 +23,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-public class TaskReminderEnqueuerTest {
+public class SendTaskReminderEnqueuerTest {
     @Mock
     private JobRequestScheduler jobRequestScheduler;
     @InjectMocks
-    private TaskReminderEnqueuer taskReminderEnqueuer;
+    private SendTaskReminderEnqueuer sendTaskReminderEnqueuer;
 
     private UUID taskUuid;
     private UUID expectedJobId;
@@ -35,14 +35,15 @@ public class TaskReminderEnqueuerTest {
     @BeforeEach
     void setUp() {
         taskUuid = UUID.randomUUID();
-        expectedJobId = UUID.nameUUIDFromBytes(("task-reminder: " + taskUuid).getBytes(StandardCharsets.UTF_8));
+        expectedJobId = UUID.nameUUIDFromBytes(
+                (SendTaskReminderEnqueuer.JOB_ID + taskUuid).getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
-    void on_TaskReminderScheduled_withRemindAt_deletesThenSchedules() {
+    void onTaskReminderScheduled_withRemindAt_deletesThenSchedules() {
         Instant remindAt = Instant.now().plusSeconds(3600);
 
-        taskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
+        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
 
         InOrder inOrder = inOrder(jobRequestScheduler);
         inOrder.verify(jobRequestScheduler).delete(eq(expectedJobId), anyString());
@@ -53,19 +54,19 @@ public class TaskReminderEnqueuerTest {
     }
 
     @Test
-    void on_TaskReminderScheduled_noRemindAt_deletesOnly() {
-        taskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, null));
+    void onTaskReminderScheduled_noRemindAt_deletesOnly() {
+        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, null));
 
         verify(jobRequestScheduler).delete(eq(expectedJobId), anyString());
         verify(jobRequestScheduler, never()).schedule(any(UUID.class), any(Instant.class), any(SendTaskReminder.class));
     }
 
     @Test
-    void on_TaskReminderScheduled_SameTask_produceSameJobId() {
+    void onTaskReminderScheduled_SameTask_produceSameJobId() {
         Instant remindAt = Instant.now().plusSeconds(60);
 
-        taskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
-        taskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
+        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
+        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
 
         verify(jobRequestScheduler, times(2)).delete(eq(expectedJobId), anyString());
     }

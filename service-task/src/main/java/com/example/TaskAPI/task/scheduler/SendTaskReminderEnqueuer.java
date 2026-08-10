@@ -12,12 +12,14 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class TaskReminderEnqueuer {
+public class SendTaskReminderEnqueuer {
+    public static final String JOB_ID = "send-task-reminder";
+
     private final JobRequestScheduler scheduler;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onTaskReminderScheduled(TaskReminderScheduledEvent event) {
-        UUID jobId = UUID.nameUUIDFromBytes(("task-reminder: " + event.taskUuid()).getBytes(StandardCharsets.UTF_8));
+        UUID jobId = UUID.nameUUIDFromBytes((JOB_ID + event.taskUuid()).getBytes(StandardCharsets.UTF_8));
         scheduler.delete(jobId, "reminder rescheduled");
 
         if (event.remindAt() != null) {
