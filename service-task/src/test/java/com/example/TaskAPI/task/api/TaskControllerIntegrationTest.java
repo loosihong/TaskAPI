@@ -10,12 +10,16 @@ import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.enums.Priority;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
+import com.example.TaskAPI.task.scheduler.SendTaskReminder;
 import com.example.TaskAPI.user.domain.entity.User;
+import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +27,10 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,6 +42,8 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 public class TaskControllerIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private AuditLogRepository auditLogRepository;
+    @MockitoBean
+    private JobRequestScheduler jobRequestScheduler;
 
     @Test
     void getAllTasks_returnsPersistedTasks() throws Exception {
@@ -250,6 +260,28 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.content[0].updatedByName").value(loginUser.getUsername()));
     }
 
+    @Test
+    void createTask_withDueDate_schedulesReminderJob() throws Exception {
+        createTask(getTaskRequest());
+
+        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
+                verify(jobRequestScheduler).schedule(
+                        any(UUID.class),
+                        any(Instant.class),
+                        any(SendTaskReminder.class)));
+    }
+
+    @Test
+    void deleteTask_cancelsReminderJob() throws Exception {
+        UUID taskUuid = createTask(getTaskRequest());
+
+        mockMvc.perform(delete("/tasks/{taskUuid}", taskUuid)
+                .with(authenticated()))
+                .andExpect(status().isNoContent());
+
+        await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
+                verify(jobRequestScheduler, atLeastOnce()).delete(any(UUID.class), anyString()));
+    }
 
     private TaskRequest.Detail getTaskRequest() {
         return TaskRequest.Detail.builder()

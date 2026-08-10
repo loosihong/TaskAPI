@@ -25,3 +25,14 @@ SET @CreateUserSql =
 
 EXEC sp_executesql @CreateUserSql;
 GO
+
+DECLARE @CreateSchemaSql NVARCHAR(MAX);
+SET @CreateSchemaSql =
+        N'USE [$(DB_NAME)];' +
+        N'IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = ''jobrunr_task'')' +
+        N'BEGIN' +
+        N'  EXEC(''CREATE SCHEMA jobrunr_task AUTHORIZATION dbo'');' +
+        N'END';
+
+EXEC sp_executesql @CreateSchemaSql;
+GO

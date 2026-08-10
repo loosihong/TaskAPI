@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.spotbugs) apply false
+    alias(libs.plugins.spring.boot) apply false
 }
 
 // Type-safe `libs.*` accessors aren't resolvable inside subprojects {} lambdas -
@@ -86,6 +87,18 @@ subprojects {
     tasks.withType<com.github.spotbugs.snom.SpotBugsTask>().configureEach {
         reports.create("html") {
             required.set(true)
+        }
+    }
+
+    tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun>().configureEach {
+        val envFile = rootProject.file(".env.dev")
+        if (envFile.exists()) {
+            envFile.readLines()
+                .filter { it.isNotBlank() && !it.trimStart().startsWith("#") && it.contains("=") }
+                .forEach { line ->
+                    val (key, value) = line.split("=", limit = 2)
+                    environment(key.trim(), value.trim())
+                }
         }
     }
 }

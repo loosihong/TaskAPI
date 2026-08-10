@@ -1,11 +1,13 @@
 package com.example.TaskAPI.infrastructure.config;
 
 import com.example.TaskAPI.core.audit.ReflectionAuditListener;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.ResolvableType;
 import org.springframework.data.domain.AuditorAware;
 
 import java.util.Optional;
@@ -28,9 +30,12 @@ public class AuditTestConfig {
     }
 
     @EventListener(ContextRefreshedEvent.class)
-    public void initaliseAuditListener(ContextRefreshedEvent event) {
+    public void initialiseAuditListener(ContextRefreshedEvent event) {
         ApplicationEventPublisher eventPublisher = event.getApplicationContext();
-        AuditorAware<Long> auditorAware = event.getApplicationContext().getBean(AuditorAware.class);
+        ObjectProvider<AuditorAware<Long>> auditorProvider = event
+                .getApplicationContext()
+                .getBeanProvider(ResolvableType.forClassWithGenerics(AuditorAware.class, Long.class));
+        AuditorAware<Long> auditorAware = auditorProvider.getObject();
         new ReflectionAuditListener().init(eventPublisher, auditorAware);
     }
 }

@@ -8,6 +8,7 @@ querydsl = "5.1.0"
 springdoc = "3.0.3"
 testcontainers = "1.20.4"
 mockito = "5.20.0"
+jobrunr = "8.8.0"
 
 [libraries]
 # BOM Platforms
@@ -26,6 +27,7 @@ querydsl-jpa = { module = "com.querydsl:querydsl-jpa", version.ref = "querydsl" 
 querydsl-apt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" }
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+jobrunr-spring = { module = "org.jobrunr:jobrunr-spring-boot-4-starter", version.ref = "jobrunr" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

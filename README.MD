@@ -40,6 +40,7 @@ docker-compose --env-file .env.dev down
 
 # Fresh start (wipes database)
 docker-compose --env-file .env.dev down -v
+docker-compose --env-file .env.dev restart
 
 # View container logs
 docker logs taskapi-mssql-dev

@@ -18,12 +18,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +41,8 @@ public class TaskServiceTest {
     private TaskRepository taskRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private TaskReminderService taskReminderService;
     @InjectMocks
     private TaskService taskService;
 
@@ -77,13 +85,13 @@ public class TaskServiceTest {
         void getTaskByUuid_found_returnsTask() {
             Task task = Task.builder().build();
 
-            when(taskRepository.findByUuid(any(UUID.class)))
+            when(taskRepository.findWithAssigneesByUuid(any(UUID.class)))
                     .thenReturn(Optional.of(task));
 
-            Optional<Task> result = taskService.getTaskByUuid(uuid);
+            Optional<Task> result = taskService.getWithAssigneesByUuid(uuid);
 
             assertThat(result).isPresent().contains(task);
-            verify(taskRepository).findByUuid(uuid);
+            verify(taskRepository).findWithAssigneesByUuid(uuid);
         }
 
         @Test
@@ -151,6 +159,21 @@ public class TaskServiceTest {
         void createTask_withNull_throwsException() {
             assertThatThrownBy(() -> taskService.createTask(null, null, null))
                     .isInstanceOf(DataValidationException.class);
+        }
+
+        @Test
+        void createTask_withDueDate_callsDueDateChanged() {
+            LocalDate dueDate = LocalDate.now().plusDays(1);
+            Task task = buildFullTask(uuid);
+
+            task.getTaskDetail().setDueDate(dueDate);
+
+            when(taskRepository.save(any(Task.class)))
+                    .thenReturn(task);
+
+            taskService.createTask(task, task.getTaskDetail(), null);
+
+            verify(taskReminderService).onDueDateChanged(uuid, null, dueDate);
         }
     }
 
@@ -300,13 +323,37 @@ public class TaskServiceTest {
                     Set.of(UUID.randomUUID(), UUID.randomUUID())))
                     .isInstanceOf(DataValidationException.class);
         }
+
+        @Test
+        void updateTaskDetail_dueDateChanged_callsDueDateChanged() {
+            LocalDate foundDueDate = LocalDate.now();
+            LocalDate savedDueDate = LocalDate.now().plusDays(1);
+            Task foundTask = buildFullTask(uuid);
+            Task savedTask = buildFullTask(uuid);
+
+            foundTask.getTaskDetail().setDueDate(foundDueDate);
+            savedTask.getTaskDetail().setDueDate(savedDueDate);
+
+            when(taskRepository.findWithDetailByUuid(any(UUID.class)))
+                    .thenReturn(Optional.of(foundTask));
+            doAnswer(invocation -> {
+                TaskDetail source = invocation.getArgument(0);
+                TaskDetail target = invocation.getArgument(1);
+                target.setDueDate(source.getDueDate());
+                return null;
+            }).when(taskMapper).update(any(TaskDetail.class), any(TaskDetail.class));
+
+            taskService.updateTaskDetail(uuid, savedTask.getTaskDetail());
+
+            verify(taskReminderService).onDueDateChanged(uuid, foundDueDate, savedDueDate);
+        }
     }
 
     @Nested
     @DisplayName("Delete Operations")
     class DeleteOperations {
         @Test
-        void deleteTask_found_deletesTask() {
+        void deleteTask_found_deletesTaskAndReminder() {
             UUID uuid = UUID.randomUUID();
 
             when(taskRepository.existsByUuid(any(UUID.class)))
@@ -315,6 +362,7 @@ public class TaskServiceTest {
             taskService.deleteTask(uuid);
 
             verify(taskRepository).deleteByUuid(uuid);
+            verify(taskReminderService).cancel(uuid);
         }
 
         @Test

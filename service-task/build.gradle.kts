@@ -25,7 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     implementation(libs.springdoc.openapi)
-
+    implementation(libs.jobrunr.spring)
     implementation(libs.mapstruct.core)
     compileOnly(libs.lombok)
 
@@ -52,7 +52,7 @@ dependencies {
     mockitoAgent(libs.mockito.core) { isTransitive = false }
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     systemProperty("java.util.logging.config.file", "src/test/resources/logging.properties")
     doFirst {
