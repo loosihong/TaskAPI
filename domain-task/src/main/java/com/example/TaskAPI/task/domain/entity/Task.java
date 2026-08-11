@@ -4,9 +4,11 @@ import com.example.TaskAPI.core.audit.Auditable;
 import com.example.TaskAPI.core.audit.annotation.AuditableField;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.core.validation.ValidationError;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -39,9 +41,9 @@ public class Task extends BaseEntity implements Auditable {
     private String title;
 
     @AuditableField
-    @Size(max = Constraints.Values.STATUS_MAX)
     @Column(nullable = false)
-    private String status;
+    @Convert(converter = TaskStatus.Converter.class)
+    private TaskStatus status;
 
     @OneToOne(
             mappedBy = Reference.TABLE_NAME,
@@ -129,7 +131,6 @@ public class Task extends BaseEntity implements Auditable {
 
         public static final class Values {
             public static final int TITLE_MAX = 255;
-            public static final int STATUS_MAX = 31;
 
             private Values() {
             }
@@ -139,7 +140,6 @@ public class Task extends BaseEntity implements Auditable {
             public static final String TITLE_REQUIRED = "Title" + ValidationError.REQUIRED;
             public static final String TITLE_MAX = "Title" + ValidationError.MAX_LENGTH;
             public static final String STATUS_REQUIRED = "Status" + ValidationError.REQUIRED;
-            public static final String STATUS_MAX = "Status" + ValidationError.MAX_LENGTH;
 
             private Messages() {
             }

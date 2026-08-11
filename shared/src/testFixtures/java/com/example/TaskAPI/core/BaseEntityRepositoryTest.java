@@ -1,7 +1,6 @@
 package com.example.TaskAPI.core;
 
 import com.example.TaskAPI.core.audit.AuditEntry;
-import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.core.model.repository.BaseEntityRepository;
 import org.hibernate.SessionFactory;
@@ -26,8 +25,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 @RecordApplicationEvents
 public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends BaseRepositoryTest {
-    @Autowired
-    private AuditLogRepository auditLogRepository;
     @Autowired
     private ApplicationEvents applicationEvents;
 
@@ -121,7 +118,7 @@ public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends Bas
                         .anySatisfy(fieldDiff -> {
                             assertThat(fieldDiff.fieldName()).isEqualTo(fieldValuePair.getFirst());
                             assertThat(fieldDiff.oldValue()).isEqualTo(oldValues.get(finalI));
-                            assertThat(fieldDiff.newValue()).isEqualTo(fieldValuePair.getSecond());
+                            assertThat(fieldDiff.newValue()).isEqualTo(String.valueOf(fieldValuePair.getSecond()));
                         });
             }
         }

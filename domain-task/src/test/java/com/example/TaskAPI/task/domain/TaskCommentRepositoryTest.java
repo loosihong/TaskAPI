@@ -3,6 +3,7 @@ package com.example.TaskAPI.task.domain;
 import com.example.TaskAPI.core.BaseEntityRepositoryTest;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskComment;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.repository.TaskCommentRepository;
 import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +23,7 @@ public class TaskCommentRepositoryTest extends BaseEntityRepositoryTest<TaskComm
     void setup() {
         Task task = Task.builder()
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .build();
 
         taskRepository.saveAndFlush(task);

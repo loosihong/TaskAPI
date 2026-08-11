@@ -3,6 +3,7 @@ package com.example.TaskAPI.task.service;
 import com.example.TaskAPI.infrastructure.config.AppProperties;
 import com.example.TaskAPI.task.api.dto.TaskReminderResult;
 import com.example.TaskAPI.task.domain.entity.Task;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.event.TaskReminderScheduledEvent;
 import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskReminderService {
     private static final LocalTime DEFAULT_SCHEDULER_REMINDER_TIME = LocalTime.of(9, 0);
-    private static final String STATUS_COMPLETED = "COMPLETED";
     private final TaskRepository taskRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final AppProperties appProperties;
@@ -31,8 +31,8 @@ public class TaskReminderService {
             return TaskReminderResult.TASK_NOT_FOUND;
         }
 
-        if (STATUS_COMPLETED.equals(task.getStatus())) {
-            return TaskReminderResult.SUPPRESSED_COMPLETED;
+        if (TaskStatus.DONE.equals(task.getStatus())) {
+            return TaskReminderResult.SUPPRESSED_DONE;
         }
 
         if (task.getTaskAssignees().isEmpty()) {

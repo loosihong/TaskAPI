@@ -1,6 +1,7 @@
 package com.example.TaskAPI.task.domain.query;
 
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import lombok.experimental.FieldNameConstants;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public record TaskDashboardItem(
         UUID taskUuid,
         String title,
-        String status,
+        TaskStatus status,
         LocalDateTime createdAt,
         String createdByName,
         LocalDateTime updatedAt,

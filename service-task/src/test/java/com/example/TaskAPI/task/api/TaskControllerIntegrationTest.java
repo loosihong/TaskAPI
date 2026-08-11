@@ -8,6 +8,7 @@ import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
 import com.example.TaskAPI.task.api.dto.TaskListSearchRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
 import com.example.TaskAPI.task.scheduler.SendTaskReminder;
@@ -70,7 +71,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
     void createTask_noDetail_returnsTask() throws Exception {
         TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .build();
 
         mockMvc.perform(post("/tasks")
@@ -99,7 +100,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
         TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
                 .uuid(uuid)
                 .title("Earn money")
-                .status("IN_PROGRESS")
+                .status(TaskStatus.IN_PROGRESS)
                 .build();
 
         mockMvc.perform(put("/tasks/{uuid}", uuid)
@@ -151,7 +152,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                                 TaskRequest.Detail.builder()
                                         .uuid(uuid)
                                         .title("updated")
-                                        .status("IN_PROGRESS")
+                                        .status(TaskStatus.IN_PROGRESS)
                                         .build())))
                 .andExpect(status().isOk());
 
@@ -188,12 +189,12 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
         User user1 = createUser("user1");
         TaskRequest.Detail taskRequest1 = TaskRequest.Detail.builder()
                 .title("Read book")
-                .status("DONE")
+                .status(TaskStatus.DONE)
                 .assigneeUuids(Set.of(user1.getUuid()))
                 .build();
         TaskRequest.Detail taskRequest2 = TaskRequest.Detail.builder()
                 .title("Arsenal")
-                .status("COMPLETED")
+                .status(TaskStatus.IN_PROGRESS)
                 .build();
         UUID task1Uuid = createTask(taskRequest1);
 
@@ -216,20 +217,20 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.content[0].uuid").value(task1Uuid.toString()))
                 .andExpect(jsonPath("$.content[0].title").value(taskRequest1.title()))
-                .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status()));
+                .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status().getCode()));
     }
 
     @Test
     void searchTaskDashboard_allFilters_appliesAllConditions() throws Exception {
         TaskRequest.Detail taskRequest1 = TaskRequest.Detail.builder()
                 .title("Read book")
-                .status("DONE")
+                .status(TaskStatus.DONE)
                 .assigneeUuids(Set.of(loginUser.getUuid()))
                 .taskDetail(getTaskDetailRequest())
                 .build();
         TaskRequest.Detail taskRequest2 = TaskRequest.Detail.builder()
                 .title("Arsenal")
-                .status("COMPLETED")
+                .status(TaskStatus.IN_PROGRESS)
                 .build();
         UUID task1Uuid = createTask(taskRequest1);
 
@@ -254,7 +255,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.content[0].taskUuid").value(task1Uuid.toString()))
                 .andExpect(jsonPath("$.content[0].title").value(taskRequest1.title()))
-                .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status()))
+                .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status().getCode()))
                 .andExpect(jsonPath("$.content[0].priority")
                         .value(taskRequest1.taskDetail().priority().toString()))
                 .andExpect(jsonPath("$.content[0].updatedByName").value(loginUser.getUsername()));
@@ -276,7 +277,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
         UUID taskUuid = createTask(getTaskRequest());
 
         mockMvc.perform(delete("/tasks/{taskUuid}", taskUuid)
-                .with(authenticated()))
+                        .with(authenticated()))
                 .andExpect(status().isNoContent());
 
         await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
@@ -286,7 +287,7 @@ public class TaskControllerIntegrationTest extends BaseIntegrationTest {
     private TaskRequest.Detail getTaskRequest() {
         return TaskRequest.Detail.builder()
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .taskDetail(getTaskDetailRequest())
                 .build();
     }

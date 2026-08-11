@@ -1,6 +1,7 @@
 package com.example.TaskAPI.task.domain.query;
 
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
 @Builder
 public record TaskDashboardFilter(
         String title,
-        List<String> statuses,
+        List<TaskStatus> statuses,
         List<Priority> priorities,
         LocalDateTime updatedAtFrom,
         LocalDateTime updatedAtTo,

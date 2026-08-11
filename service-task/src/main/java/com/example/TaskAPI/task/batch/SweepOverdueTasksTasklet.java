@@ -3,6 +3,7 @@ package com.example.TaskAPI.task.batch;
 import com.example.TaskAPI.task.domain.entity.QTask;
 import com.example.TaskAPI.task.domain.entity.QTaskDetail;
 import com.example.TaskAPI.task.domain.entity.Task;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +22,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SweepOverdueTasksTasklet implements Tasklet {
     private static final long MAX_SWEEP = 100_000L;
-    private static final String STATUS_COMPLETED = "COMPLETED";
-    private static final String STATUS_OVERDUE = "OVERDUE";
 
     private final JPAQueryFactory jpaQueryFactory;
 
@@ -49,7 +48,7 @@ public class SweepOverdueTasksTasklet implements Tasklet {
                 .from(qTask)
                 .innerJoin(qTaskDetail).on(qTaskDetail.task.id.eq(qTask.id))
                 .where(qTaskDetail.dueDate.lt(cutOffDate)
-                        .and(qTask.status.notIn(STATUS_COMPLETED, STATUS_OVERDUE)))
+                        .and(qTask.status.notIn(TaskStatus.OVERDUE, TaskStatus.DONE)))
                 .limit(batchSize)
                 .fetch();
 
@@ -57,7 +56,7 @@ public class SweepOverdueTasksTasklet implements Tasklet {
             return RepeatStatus.FINISHED;
         }
 
-        taskBatch.forEach(task -> task.setStatus(STATUS_OVERDUE));
+        taskBatch.forEach(task -> task.setStatus(TaskStatus.OVERDUE));
         contribution.incrementWriteCount(taskBatch.size());
         log.debug("Swept {} overdue tasks", taskBatch.size());
 

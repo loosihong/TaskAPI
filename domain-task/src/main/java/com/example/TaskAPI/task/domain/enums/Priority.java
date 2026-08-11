@@ -25,7 +25,7 @@ public enum Priority {
         throw new IllegalArgumentException("Unknown Priority value: " + value);
     }
 
-    @jakarta.persistence.Converter(autoApply = true)
+    @jakarta.persistence.Converter
     public static class Converter implements AttributeConverter<Priority, Short> {
         @Override
         public Short convertToDatabaseColumn(Priority priority) {

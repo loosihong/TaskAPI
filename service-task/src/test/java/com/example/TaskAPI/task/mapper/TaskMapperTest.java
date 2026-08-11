@@ -8,6 +8,7 @@ import com.example.TaskAPI.task.api.dto.TaskResponse;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
@@ -27,7 +28,7 @@ public class TaskMapperTest extends BaseMapperTest {
         TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
                 .uuid(UUID.randomUUID())
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .version(1)
                 .build();
         Task expectedTask = Task.builder()
@@ -67,7 +68,7 @@ public class TaskMapperTest extends BaseMapperTest {
         Task task = Task.builder()
                 .uuid(UUID.randomUUID())
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .version(1)
                 .build();
         TaskResponse.Detail expectedTaskResponse = TaskResponse.Detail.builder()
@@ -108,7 +109,7 @@ public class TaskMapperTest extends BaseMapperTest {
                 .id(1L)
                 .uuid(UUID.randomUUID())
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .version(1)
                 .build();
         Task target = new Task();

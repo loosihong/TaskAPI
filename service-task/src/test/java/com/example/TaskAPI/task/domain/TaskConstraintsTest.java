@@ -6,6 +6,7 @@ import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -27,11 +28,23 @@ public class TaskConstraintsTest extends BaseConstraintsTest {
 
                 // status
                 Arguments.of(TaskRequest.Detail.builder()
-                                .status("a")
+                                .status(TaskStatus.TODO)
                                 .build(),
                         Task.Fields.status),
                 Arguments.of(TaskRequest.Detail.builder()
-                                .status("a".repeat(Task.Constraints.Values.STATUS_MAX))
+                                .status(TaskStatus.DONE)
+                                .build(),
+                        Task.Fields.status),
+                Arguments.of(TaskRequest.Detail.builder()
+                                .status(TaskStatus.IN_PROGRESS)
+                                .build(),
+                        Task.Fields.status),
+                Arguments.of(TaskRequest.Detail.builder()
+                                .status(TaskStatus.OVERDUE)
+                                .build(),
+                        Task.Fields.status),
+                Arguments.of(TaskRequest.Detail.builder()
+                                .status(TaskStatus.CANCELLED)
                                 .build(),
                         Task.Fields.status)
         );
@@ -57,20 +70,10 @@ public class TaskConstraintsTest extends BaseConstraintsTest {
 
                 // status
                 Arguments.of(TaskRequest.Detail.builder()
-                                .status("")
+                                .status(null)
                                 .build(),
                         Task.Fields.status,
-                        Task.Constraints.Messages.STATUS_REQUIRED),
-                Arguments.of(TaskRequest.Detail.builder()
-                                .status(" ")
-                                .build(),
-                        Task.Fields.status,
-                        Task.Constraints.Messages.STATUS_REQUIRED),
-                Arguments.of(TaskRequest.Detail.builder()
-                                .status("a".repeat(Task.Constraints.Values.STATUS_MAX + 1))
-                                .build(),
-                        Task.Fields.status,
-                        Task.Constraints.Messages.STATUS_MAX)
+                        Task.Constraints.Messages.STATUS_REQUIRED)
         );
     }
 

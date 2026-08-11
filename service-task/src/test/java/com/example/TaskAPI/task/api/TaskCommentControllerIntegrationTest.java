@@ -3,6 +3,7 @@ package com.example.TaskAPI.task.api;
 import com.example.TaskAPI.core.BaseIntegrationTest;
 import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -80,7 +81,7 @@ public class TaskCommentControllerIntegrationTest extends BaseIntegrationTest {
     private TaskRequest.Detail validTaskRequest() {
         return TaskRequest.Detail.builder()
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .build();
     }
 

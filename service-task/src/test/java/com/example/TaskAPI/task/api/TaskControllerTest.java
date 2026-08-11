@@ -13,6 +13,7 @@ import com.example.TaskAPI.task.api.dto.TaskResponse;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
@@ -71,7 +72,7 @@ public class TaskControllerTest extends BaseControllerTest {
         return TaskRequest.Detail.builder()
                 .uuid(uuid)
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .build();
     }
 
@@ -79,7 +80,7 @@ public class TaskControllerTest extends BaseControllerTest {
         return TaskRequest.Detail.builder()
                 .uuid(uuid)
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .assigneeUuids(new HashSet<>(List.of(UUID.randomUUID(), UUID.randomUUID())))
                 .taskDetail(TaskDetailRequest.Detail.builder()
                         .priority(Priority.LOW)
@@ -91,7 +92,7 @@ public class TaskControllerTest extends BaseControllerTest {
         return TaskResponse.Detail.builder()
                 .uuid(uuid)
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .build();
     }
 
@@ -99,7 +100,7 @@ public class TaskControllerTest extends BaseControllerTest {
         return TaskResponse.Detail.builder()
                 .uuid(uuid)
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .taskAssignees(new HashSet<>(List.of(
                         UserResponse.Summary.builder()
                                 .uuid(UUID.randomUUID())
@@ -205,7 +206,7 @@ public class TaskControllerTest extends BaseControllerTest {
                     .thenReturn(new PageImpl<>(List.of(new TaskDashboardItem(
                             UUID.randomUUID(),
                             "",
-                            "",
+                            null,
                             LocalDateTime.now(),
                             "",
                             LocalDateTime.now(),

@@ -5,6 +5,7 @@ import com.example.TaskAPI.infrastructure.config.TestAppProperties;
 import com.example.TaskAPI.task.api.dto.TaskReminderResult;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskAssignee;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.event.TaskReminderScheduledEvent;
 import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import com.example.TaskAPI.user.domain.entity.User;
@@ -47,7 +48,7 @@ public class TaskReminderServiceTest {
         taskUuid = UUID.randomUUID();
     }
 
-    private Task buildTask(String status, boolean withAssignee) {
+    private Task buildTask(TaskStatus status, boolean withAssignee) {
         Set<TaskAssignee> assignees = withAssignee ?
                 new HashSet<>(Set.of(TaskAssignee.builder()
                         .user(User.builder()
@@ -73,18 +74,18 @@ public class TaskReminderServiceTest {
     }
 
     @Test
-    void sendReminder_completed_returnsSuppressedCompleted() {
+    void sendReminder_completed_returnsSuppressedDone() {
         when(taskRepository.findWithAssigneesByUuid(taskUuid))
-                .thenReturn(Optional.of(buildTask("COMPLETED", true)));
+                .thenReturn(Optional.of(buildTask(TaskStatus.DONE, true)));
 
         assertThat(taskReminderService.sendReminder(taskUuid))
-                .isEqualTo(TaskReminderResult.SUPPRESSED_COMPLETED);
+                .isEqualTo(TaskReminderResult.SUPPRESSED_DONE);
     }
 
     @Test
     void sendReminder_noAssignee_returnsSuppressedNoAssignee() {
         when(taskRepository.findWithAssigneesByUuid(taskUuid))
-                .thenReturn(Optional.of(buildTask("IN_PROGRESS", false)));
+                .thenReturn(Optional.of(buildTask(TaskStatus.IN_PROGRESS, false)));
 
         assertThat(taskReminderService.sendReminder(taskUuid))
                 .isEqualTo(TaskReminderResult.SUPPRESSED_NO_ASSIGNEE);
@@ -93,7 +94,7 @@ public class TaskReminderServiceTest {
     @Test
     void sendReminder_inProgressWithAssignee_returnSent() {
         when(taskRepository.findWithAssigneesByUuid(taskUuid))
-                .thenReturn(Optional.of(buildTask("IN_PROGRESS", true)));
+                .thenReturn(Optional.of(buildTask(TaskStatus.IN_PROGRESS, true)));
 
         assertThat(taskReminderService.sendReminder(taskUuid))
                 .isEqualTo(TaskReminderResult.SENT);

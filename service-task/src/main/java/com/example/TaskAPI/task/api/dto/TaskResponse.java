@@ -1,6 +1,7 @@
 package com.example.TaskAPI.task.api.dto;
 
 import com.example.TaskAPI.core.dto.BaseEntityDetailResponse;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.user.api.dto.UserResponse;
 import lombok.Builder;
 
@@ -12,7 +13,7 @@ public interface TaskResponse {
     @Builder
     record Detail(
             String title,
-            String status,
+            TaskStatus status,
             TaskDetailResponse.Detail taskDetail,
             Set<UserResponse.Summary> taskAssignees,
             UUID uuid,

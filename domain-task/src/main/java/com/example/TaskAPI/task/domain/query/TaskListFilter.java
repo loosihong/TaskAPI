@@ -1,5 +1,6 @@
 package com.example.TaskAPI.task.domain.query;
 
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Builder
 public record TaskListFilter(
         String title,
-        List<String> statuses,
+        List<TaskStatus> statuses,
         List<UUID> assigneeUuids,
         LocalDateTime createdAtFrom,
         LocalDateTime createdAtTo

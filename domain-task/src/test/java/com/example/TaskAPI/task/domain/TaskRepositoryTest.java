@@ -8,6 +8,7 @@ import com.example.TaskAPI.task.domain.entity.QTask;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;
+import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
@@ -43,18 +44,18 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
     @Autowired
     private TaskRepository taskRepository;
-    private Task InitialTask;
+    private Task initialTask;
     @Autowired
     private TaskPredicateBuilder taskPredicateBuilder;
 
     @BeforeEach
     void setupEach() {
-        InitialTask = Task.builder()
+        initialTask = Task.builder()
                 .title("Buy groceries")
-                .status("TODO")
+                .status(TaskStatus.TODO)
                 .createdAt(LocalDateTime.now())
                 .build();
-        taskRepository.saveAndFlush(InitialTask);
+        taskRepository.saveAndFlush(initialTask);
         entityManager.clear();
     }
 
@@ -68,34 +69,34 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
     class TestTaskRepository {
         @Test
         void create_defaultData() {
-            assertCreationData(InitialTask);
+            assertCreationData(initialTask);
         }
 
         @Test
         void save_throwsOnVersionConflict() {
-            assertVersionConflict(InitialTask, taskRepository);
+            assertVersionConflict(initialTask, taskRepository);
         }
 
         @Test
         void deleteById_performsSoftDelete() {
-            assertSoftDeleteById(InitialTask, taskRepository);
+            assertSoftDeleteById(initialTask, taskRepository);
         }
 
         @Test
         void deleteByUuid_performsSoftDelete() {
-            assertSoftDeleteByUuid(InitialTask, taskRepository);
+            assertSoftDeleteByUuid(initialTask, taskRepository);
         }
 
         @Test
         void updateAuditableField_shouldCreateAuditLog() {
-            assertAuditableField(InitialTask, taskRepository, List.of(
-                    Pair.of(Task.Fields.status, "COMPLETED")
+            assertAuditableField(initialTask, taskRepository, List.of(
+                    Pair.of(Task.Fields.status, TaskStatus.DONE)
             ));
         }
 
         @Test
         void updateNonAuditableField_shouldNotCreateAuditLog() {
-            assertNonAuditableField(InitialTask, taskRepository, List.of(
+            assertNonAuditableField(initialTask, taskRepository, List.of(
                     Pair.of(Task.Fields.title, "New title")
             ));
         }
@@ -104,7 +105,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
     @Nested
     @DisplayName("Search TaskList")
     class SearchTaskList {
-        private Task createTask(String title, String status) {
+        private Task createTask(String title, TaskStatus status) {
             return entityManager.persistAndFlush(Task.builder()
                     .title(title)
                     .status(status)
@@ -128,7 +129,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_noFilter_returnsAllTasks() {
-            createTask("Read book", "DONE");
+            createTask("Read book", TaskStatus.DONE);
 
             TaskListFilter taskListFilter = TaskListFilter.builder().build();
             Page<Task> result = taskRepository.findAll(
@@ -139,7 +140,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_title_returnsTasks() {
-            Task task1 = createTask("North London", "DONE");
+            Task task1 = createTask("North London", TaskStatus.DONE);
 
             TaskListFilter taskListFilter = TaskListFilter.builder()
                     .title(task1.getTitle().toLowerCase().substring(1))
@@ -153,7 +154,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_blankTitle_returnsAllTasks() {
-            createTask("Read book", "DONE");
+            createTask("Read book", TaskStatus.DONE);
 
             TaskListFilter taskListFilter = TaskListFilter.builder()
                     .title("   ")
@@ -166,8 +167,8 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_statuses_returnsTasks() {
-            Task task1 = createTask("North London", "DONE");
-            Task task2 = createTask("Arsenal forever", "COMPLETED");
+            Task task1 = createTask("North London", TaskStatus.DONE);
+            Task task2 = createTask("Arsenal forever", TaskStatus.IN_PROGRESS);
 
             TaskListFilter taskListFilter = TaskListFilter.builder()
                     .statuses(List.of(task1.getStatus(), task2.getStatus()))
@@ -183,8 +184,8 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_createdAt_returnsTasks() {
-            Task task1 = createTask("North London", "DONE");
-            Task task2 = createTask("Arsenal forever", "COMPLETED");
+            Task task1 = createTask("North London", TaskStatus.DONE);
+            Task task2 = createTask("Arsenal forever", TaskStatus.IN_PROGRESS);
 
             setCreatedAt(task1, LocalDateTime.now().minusDays(7));
             setCreatedAt(task2, LocalDateTime.now().minusDays(3));
@@ -202,7 +203,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         @Test
         void searchTasks_pagination_returnsPage() {
             IntStream.rangeClosed(1, 20)
-                    .forEach(idx -> createTask("Task " + idx, "TODO"));
+                    .forEach(idx -> createTask("Task " + idx, TaskStatus.TODO));
 
             TaskListFilter taskListFilter = TaskListFilter.builder().build();
             PageRequest pageRequest = PageRequest.of(1, 5,
@@ -217,8 +218,8 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         @Test
         void searchTasks_sortTitle_returnsSortedResult() {
-            Task task1 = createTask("Alpha task", "TODO");
-            Task task2 = createTask("Beta task", "TODO");
+            Task task1 = createTask("Alpha task", TaskStatus.TODO);
+            Task task2 = createTask("Beta task", TaskStatus.TODO);
 
             TaskListFilter taskListFilter = TaskListFilter.builder().build();
             PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(ASC, Task.Fields.title));
@@ -227,13 +228,13 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
             assertThat(result.getContent())
                     .extracting(Task::getTitle)
-                    .containsExactly(task1.getTitle(), task2.getTitle(), InitialTask.getTitle());
+                    .containsExactly(task1.getTitle(), task2.getTitle(), initialTask.getTitle());
         }
 
         @Test
         void searchTasks_noResult_returnsEmptyPage() {
             TaskListFilter taskListFilter = TaskListFilter.builder()
-                    .statuses(List.of("INVALID"))
+                    .statuses(List.of(TaskStatus.CANCELLED))
                     .build();
             Page<Task> result = taskRepository.findAll(
                     taskPredicateBuilder.buildPredicate(taskListFilter), getDefaultPageRequest());
@@ -277,7 +278,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
         private Task createTask(
                 String title,
-                String status,
+                TaskStatus status,
                 List<User> assignees,
                 Priority priority
         ) {
@@ -349,12 +350,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_noFilter_returnsAllDashboardItems() {
             createTask(
                     "Read book",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
             createTask(
                     "Arsenal",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
 
@@ -370,7 +371,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_title_returnDashboardItems() {
             Task task1 = createTask(
                     "Read book",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
 
@@ -389,7 +390,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_blankTitle_returnDashboardItems() {
             createTask(
                     "Read book",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
 
@@ -407,12 +408,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_statuses_returnDashboardItems() {
             Task task1 = createTask(
                     "Read book",
-                    "DONE",
+                    TaskStatus.DONE,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
             Task task2 = createTask(
                     "North London forever",
-                    "COMPLETED",
+                    TaskStatus.IN_PROGRESS,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
 
@@ -433,12 +434,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_priority_returnDashboardItems() {
             createTask(
                     "Read book",
-                    "DONE",
+                    TaskStatus.DONE,
                     new ArrayList<>(List.of(assignee)),
                     Priority.MEDIUM);
             createTask(
                     "North London forever",
-                    "COMPLETED",
+                    TaskStatus.IN_PROGRESS,
                     new ArrayList<>(List.of(assignee)),
                     Priority.HIGH);
 
@@ -459,12 +460,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_updatedAt_returnDashboardItems() {
             Task task1 = createTask(
                     "Read book",
-                    "DONE",
+                    TaskStatus.DONE,
                     new ArrayList<>(List.of(assignee)),
                     Priority.MEDIUM);
             Task task2 = createTask(
                     "North London forever",
-                    "COMPLETED",
+                    TaskStatus.IN_PROGRESS,
                     new ArrayList<>(List.of(assignee)),
                     Priority.HIGH);
 
@@ -486,12 +487,12 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_updatedUuids_returnDashboardItems() {
             createTask(
                     "Read book",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
             createTask(
                     "Arsenal",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(assignee)),
                     Priority.LOW);
 
@@ -510,7 +511,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
             IntStream.rangeClosed(0, 20)
                     .forEach(idx -> createTask(
                             "Task " + idx,
-                            "TODO",
+                            TaskStatus.TODO,
                             List.of(assignee),
                             Priority.MEDIUM));
 
@@ -529,17 +530,17 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortTitle_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task3 = createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
 
@@ -558,17 +559,17 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortStatus_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "STAT_X",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "STAT_Z",
+                    TaskStatus.DONE,
                     List.of(assignee),
                     Priority.LOW);
             Task task3 = createTask(
                     "Task B",
-                    "STAT_Y",
+                    TaskStatus.IN_PROGRESS,
                     List.of(assignee),
                     Priority.LOW);
 
@@ -580,24 +581,24 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
 
             assertThat(result.getContent())
                     .extracting(TaskDashboardItem::status)
-                    .containsExactly(task2.getStatus(), task3.getStatus(), task1.getStatus());
+                    .containsExactly(task1.getStatus(), task3.getStatus(), task2.getStatus());
         }
 
         @Test
         void searchTasks_sortCreatedAt_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.MEDIUM);
             Task task3 = createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.HIGH);
 
@@ -622,18 +623,18 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortCreatedBy_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.MEDIUM);
 
             createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.HIGH);
             User user2 = createUser("user2");
@@ -660,17 +661,17 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortUpdatedAt_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.MEDIUM);
             Task task3 = createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.HIGH);
 
@@ -695,18 +696,18 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortUpdatedBy_returnsSortedResult() {
             createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
 
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.MEDIUM);
             Task task3 = createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.HIGH);
             User user2 = createUser("user2");
@@ -733,17 +734,17 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_sortPriority_returnsSortedResult() {
             Task task1 = createTask(
                     "Task C",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.LOW);
             Task task2 = createTask(
                     "Task A",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.MEDIUM);
             Task task3 = createTask(
                     "Task B",
-                    "TODO",
+                    TaskStatus.TODO,
                     List.of(assignee),
                     Priority.HIGH);
 
@@ -767,7 +768,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
             User user3 = createUser("user3");
             Task task = createTask(
                     "Read book",
-                    "TODO",
+                    TaskStatus.TODO,
                     new ArrayList<>(List.of(user2, user3, assignee)),
                     Priority.LOW);
 
@@ -788,7 +789,7 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_noResult_returnsEmptyPage() {
             Page<TaskDashboardItem> result = taskRepository.findTaskDashboardItems(
                     TaskDashboardFilter.builder()
-                            .statuses(List.of("INVALID"))
+                            .statuses(List.of(TaskStatus.TODO))
                             .build(),
                     getDefaultPageRequest(),
                     assignee.getId());
