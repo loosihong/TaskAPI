@@ -1,7 +1,7 @@
 package com.example.TaskAPI.core.audit;
 
 import com.example.TaskAPI.core.audit.annotation.AuditableField;
-import com.example.TaskAPI.core.model.BaseEntity;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import org.apache.logging.log4j.internal.annotation.SuppressFBWarnings;
 import org.slf4j.Logger;
@@ -12,9 +12,12 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Component
 public class ReflectionAuditListener {
@@ -36,45 +39,67 @@ public class ReflectionAuditListener {
 
     @PreUpdate
     public void onPreUpdate(Object entity) {
-        if (!((entity instanceof BaseEntity baseEntity)
-                && (entity instanceof Auditable auditable))) {
+        if (!(entity instanceof Auditable auditable)) {
             return;
         }
+
         List<AuditEntry.FieldDiff> fieldDiffs = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
 
-        for (Field field : entity.getClass().getDeclaredFields()) {
-            if (!field.isAnnotationPresent(AuditableField.class)) {
-                continue;
-            }
-
-            try {
-                field.setAccessible(true);
-                Object oldValue = baseEntity.getSnapshot().get(field.getName());
-                Object newValue = field.get(entity);
-
-                if (Objects.equals(oldValue, newValue)) {
+        for (Class<?> currentClass = entity.getClass();
+             currentClass != null && currentClass != Object.class;
+             currentClass = currentClass.getSuperclass()) {
+            for (Field field : currentClass.getDeclaredFields()) {
+                if (!field.isAnnotationPresent(AuditableField.class)
+                        || Modifier.isStatic(field.getModifiers())
+                        || !visited.add(field.getName())) {
                     continue;
                 }
 
-                AuditableField annotation = field.getAnnotation(AuditableField.class);
-                String fieldLabel = annotation.displayName().isEmpty() ?
-                        field.getName() : annotation.displayName();
-                fieldDiffs.add(new AuditEntry.FieldDiff(
-                        fieldLabel,
-                        String.valueOf(oldValue),
-                        String.valueOf(newValue)));
-            } catch (IllegalAccessException ex) {
-                log.warn("Failed to read auditable field '{}' on entity '{}' for audit logging",
-                        field.getName(), entity.getClass().getSimpleName(), ex);
+                try {
+                    field.setAccessible(true);
+                    Object oldValue = auditable.getSnapshot().get(field.getName());
+                    Object newValue = field.get(entity);
+
+                    if (Objects.equals(oldValue, newValue)) {
+                        continue;
+                    }
+
+                    AuditableField annotation = field.getAnnotation(AuditableField.class);
+                    String fieldLabel = annotation.displayName().isEmpty() ?
+                            field.getName() : annotation.displayName();
+                    fieldDiffs.add(new AuditEntry.FieldDiff(
+                            fieldLabel,
+                            String.valueOf(oldValue),
+                            String.valueOf(newValue)));
+                } catch (IllegalAccessException ex) {
+                    log.warn("Failed to read auditable field '{}' on entity '{}' for audit logging",
+                            field.getName(), entity.getClass().getSimpleName(), ex);
+                }
             }
         }
 
         if (!fieldDiffs.isEmpty()) {
-            eventPublisher.publishEvent(new AuditEntry(
-                    entity.getClass().getSimpleName(),
-                    auditable.getUuid(),
-                    auditorAware.getCurrentAuditor().orElse(null),
-                    fieldDiffs));
+            publish(entity, auditable, fieldDiffs);
         }
+    }
+
+    @PreRemove
+    public void onPreRemove(Object entity) {
+        if (!(entity instanceof Auditable auditable)) {
+            return;
+        }
+
+        publish(entity,
+                auditable,
+                List.of(new AuditEntry.FieldDiff("deleted", "false", "true")));
+    }
+
+    private void publish(Object entity, Auditable auditable, List<AuditEntry.FieldDiff> fieldDiffs) {
+        eventPublisher.publishEvent(new AuditEntry(
+                entity.getClass().getSimpleName(),
+                auditable.getUuid(),
+                auditorAware.getCurrentAuditor().orElse(null),
+                fieldDiffs));
     }
 }

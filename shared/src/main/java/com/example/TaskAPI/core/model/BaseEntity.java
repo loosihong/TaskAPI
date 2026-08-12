@@ -2,6 +2,7 @@ package com.example.TaskAPI.core.model;
 
 import com.example.TaskAPI.core.audit.Auditable;
 import com.example.TaskAPI.core.audit.ReflectionAuditListener;
+import com.example.TaskAPI.core.audit.Snapshotable;
 import com.example.TaskAPI.core.audit.annotation.AuditableField;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
@@ -29,6 +30,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +45,7 @@ import java.util.UUID;
 @FieldNameConstants
 @EntityListeners({AuditingEntityListener.class, ReflectionAuditListener.class})
 @SoftDelete(columnName = "is_deleted", converter = NumericBooleanConverter.class)
-public abstract class BaseEntity {
+public abstract class BaseEntity implements Snapshotable {
     @Transient
     private final Map<String, Object> snapshot = new HashMap<>();
     @Id
@@ -65,7 +67,6 @@ public abstract class BaseEntity {
     @Setter
     @Version
     protected Integer version;
-    @AuditableField
     @Column(name = "is_deleted", insertable = false, updatable = false)
     protected boolean deleted;
 
@@ -84,8 +85,16 @@ public abstract class BaseEntity {
 
         snapshot.clear();
 
-        for (Field field : this.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(AuditableField.class)) {
+        for (Class<?> currentClass = this.getClass();
+             currentClass != null && currentClass != Object.class;
+             currentClass = currentClass.getSuperclass()) {
+            for (Field field : currentClass.getDeclaredFields()) {
+                if (!field.isAnnotationPresent(AuditableField.class)
+                        || Modifier.isStatic(field.getModifiers())
+                        || snapshot.containsKey(field.getName())) {
+                    continue;
+                }
+
                 try {
                     field.setAccessible(true);
                     snapshot.put(field.getName(), field.get(this));

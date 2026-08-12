@@ -25,6 +25,13 @@ dependencies {
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
 
+    testImplementation(platform(libs.spring.boot.dependencies))
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-params")
+
+    testRuntimeOnly(platform(libs.spring.boot.dependencies))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
     // --- testFixtures: consumed by domain-user, domain-task, service-task ---
     testFixturesApi(platform(libs.spring.boot.dependencies))
     testFixturesApi(platform(libs.testcontainers.bom))

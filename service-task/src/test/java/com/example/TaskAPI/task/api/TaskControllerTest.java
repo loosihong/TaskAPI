@@ -39,6 +39,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anySet;
@@ -51,6 +53,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -132,6 +135,18 @@ public class TaskControllerTest extends BaseControllerTest {
             mockMvc.perform(get("/tasks"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.length()").value(2));
+        }
+
+        @Test
+        void unmappedException_returns500WithMaskedDetail() throws Exception {
+            when(taskService.getAllTasks())
+                    .thenThrow(new IllegalStateException("abcd"));
+
+            mockMvc.perform(get("/tasks"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.error").value("An unexpected error occurred"))
+                    .andExpect(jsonPath("$.status").value(500))
+                    .andExpect(content().string(not(containsString("abcd"))));
         }
 
         @Test
@@ -288,7 +303,9 @@ public class TaskControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(
                                     TaskRequest.Detail.builder().build())))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors.title").value(Task.Constraints.Messages.TITLE_REQUIRED))
+                    .andExpect(jsonPath("$.errors.status").value(Task.Constraints.Messages.STATUS_REQUIRED));
         }
     }
 
