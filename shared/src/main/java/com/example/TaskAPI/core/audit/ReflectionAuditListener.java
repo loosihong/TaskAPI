@@ -14,10 +14,8 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Component
 public class ReflectionAuditListener {
@@ -44,15 +42,13 @@ public class ReflectionAuditListener {
         }
 
         List<AuditEntry.FieldDiff> fieldDiffs = new ArrayList<>();
-        Set<String> visited = new HashSet<>();
 
         for (Class<?> currentClass = entity.getClass();
              currentClass != null && currentClass != Object.class;
              currentClass = currentClass.getSuperclass()) {
             for (Field field : currentClass.getDeclaredFields()) {
                 if (!field.isAnnotationPresent(AuditableField.class)
-                        || Modifier.isStatic(field.getModifiers())
-                        || !visited.add(field.getName())) {
+                        || Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
 

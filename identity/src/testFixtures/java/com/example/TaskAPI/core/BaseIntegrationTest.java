@@ -9,17 +9,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Import(SyncAuditExecutorConfig.class)
 public abstract class BaseIntegrationTest extends TestcontainersConfig {
@@ -28,8 +24,6 @@ public abstract class BaseIntegrationTest extends TestcontainersConfig {
     private final List<Long> deleteUserIds = new ArrayList<>();
     @Autowired
     protected AuthService authService;
-    @Autowired
-    protected MockMvc mockMvc;
     @Autowired
     protected ObjectMapper objectMapper;
     @Autowired
@@ -54,13 +48,6 @@ public abstract class BaseIntegrationTest extends TestcontainersConfig {
     @AfterAll
     void cleanUpAuth() {
         databaseCleanup.deleteUsers(List.of(loginUser.getId()));
-    }
-
-    protected RequestPostProcessor authenticated() {
-        return request -> {
-            request.addHeader("Authorization", "Bearer " + testUserToken);
-            return request;
-        };
     }
 
     protected User createUser(String username) {

@@ -28,10 +28,12 @@ public class PageableRequestTest {
     }
 
     @Test
-    void toPageable_fallsBackToDefaults_whenSortUnspecified() {
+    void toPageable_usesDefault_whenSortUnspecified() {
         Pageable pageable = PageableRequest.builder().build()
                 .toPageable(Sort.Direction.DESC, BaseEntity.Fields.createdAt);
 
+        assertThat(pageable.getPageNumber()).isZero();
+        assertThat(pageable.getPageSize()).isEqualTo(20);
         assertThat(pageable.getSort().getOrderFor(BaseEntity.Fields.createdAt))
                 .isNotNull()
                 .extracting(Sort.Order::getDirection)
@@ -43,9 +45,13 @@ public class PageableRequestTest {
         Pageable pageable = PageableRequest.builder()
                 .sortBy(BaseEntity.Fields.updatedBy)
                 .sortDirection(Sort.Direction.ASC)
+                .pageNumber(2)
+                .pageSize(50)
                 .build()
                 .toPageable(Sort.Direction.DESC, BaseEntity.Fields.createdAt);
 
+        assertThat(pageable.getPageNumber()).isEqualTo(2);
+        assertThat(pageable.getPageSize()).isEqualTo(50);
         assertThat(pageable.getSort().getOrderFor(BaseEntity.Fields.createdAt)).isNull();
         assertThat(pageable.getSort().getOrderFor(BaseEntity.Fields.updatedBy))
                 .extracting(Sort.Order::getDirection)

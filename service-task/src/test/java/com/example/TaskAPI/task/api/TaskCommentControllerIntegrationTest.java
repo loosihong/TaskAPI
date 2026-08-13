@@ -1,6 +1,6 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseIntegrationTest;
+import com.example.TaskAPI.core.BaseWebIntegrationTest;
 import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.enums.TaskStatus;
@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class TaskCommentControllerIntegrationTest extends BaseIntegrationTest {
+public class TaskCommentControllerIntegrationTest extends BaseWebIntegrationTest {
     @Test
     void getTaskCommentListItemsByTaskUuid_returnsPersistedTaskComments() throws Exception {
         UUID taskUuid = createTask(validTaskRequest());

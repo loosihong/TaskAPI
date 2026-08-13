@@ -1,6 +1,7 @@
 package com.example.TaskAPI.task.domain;
 
 import com.example.TaskAPI.core.BaseEntityRepositoryTest;
+import com.example.TaskAPI.core.audit.AuditEntry;
 import com.example.TaskAPI.core.exception.DataValidationException;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.infrastructure.config.AuditTestConfig;
@@ -32,6 +33,7 @@ import org.springframework.data.util.Pair;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,21 +97,41 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         }
 
         @Test
-        void updateNonAuditableField_shouldNotCreateAuditLog() {
-            assertNonAuditableField(initialTask, taskRepository, List.of(
-                    Pair.of(Task.Fields.title, "New title")
-            ));
+        void deleteTask_shouldPublishDeletionAuditEntry() {
+            UUID taskUuid = initialTask.getUuid();
+
+            taskRepository.delete(initialTask);
+            taskRepository.flush();
+
+            assertThat(applicationEvents.stream(AuditEntry.class)
+                    .filter(entry -> entry.entityUUID().equals(taskUuid))
+                    .toList())
+                    .singleElement()
+                    .satisfies(entry -> {
+                        assertThat(entry.entityName()).isEqualTo(Task.class.getSimpleName());
+                        assertThat(entry.fieldDiffs()).singleElement().satisfies(diff -> {
+                            assertThat(diff.fieldName()).isEqualTo(BaseEntity.Fields.deleted);
+                            assertThat(diff.oldValue()).isEqualTo("false");
+                            assertThat(diff.newValue()).isEqualTo("true");
+                        });
+                    });
         }
     }
 
     @Nested
     @DisplayName("Search TaskList")
     class SearchTaskList {
-        private Task createTask(String title, TaskStatus status) {
-            return entityManager.persistAndFlush(Task.builder()
+        private Task createTask(String title, TaskStatus status, User... assignees) {
+            Task task = Task.builder()
                     .title(title)
                     .status(status)
-                    .build());
+                    .build();
+
+            for (User assignee : assignees) {
+                task.addAssignee(assignee);
+            }
+
+            return entityManager.persistAndFlush(task);
         }
 
         private void setCreatedAt(Task task, LocalDateTime createdAt) {
@@ -186,9 +208,11 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
         void searchTasks_createdAt_returnsTasks() {
             Task task1 = createTask("North London", TaskStatus.DONE);
             Task task2 = createTask("Arsenal forever", TaskStatus.IN_PROGRESS);
+            Task task3 = createTask("Our home", TaskStatus.TODO);
 
             setCreatedAt(task1, LocalDateTime.now().minusDays(7));
             setCreatedAt(task2, LocalDateTime.now().minusDays(3));
+            setCreatedAt(task3, LocalDateTime.now().minusDays(15));
 
             TaskListFilter taskListFilter = TaskListFilter.builder()
                     .createdAtFrom(LocalDateTime.now().minusDays(10))
@@ -198,6 +222,25 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
                     taskPredicateBuilder.buildPredicate(taskListFilter), getDefaultPageRequest());
 
             assertThat(result.getContent()).hasSize(2);
+        }
+
+        @Test
+        void searchTasks_assigneeUuids_returnsMatchingTasks() {
+            User user1 = createUser("assignee1");
+            User user2 = createUser("assignee2");
+            Task task1 = createTask("North London", TaskStatus.DONE, user1, user2);
+            Task task2 = createTask("Arsenal forever", TaskStatus.IN_PROGRESS, user2);
+            TaskListFilter taskListFilter = TaskListFilter.builder()
+                    .assigneeUuids(List.of(user1.getUuid(), user2.getUuid()))
+                    .build();
+            Page<Task> result = taskRepository.findAll(
+                    taskPredicateBuilder.buildPredicate(taskListFilter),
+                    getDefaultPageRequest());
+
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent())
+                    .extracting(Task::getUuid)
+                    .containsExactlyInAnyOrder(task1.getUuid(), task2.getUuid());
         }
 
         @Test

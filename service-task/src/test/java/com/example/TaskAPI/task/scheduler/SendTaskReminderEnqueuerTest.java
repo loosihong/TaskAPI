@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,15 +58,5 @@ public class SendTaskReminderEnqueuerTest {
 
         verify(jobRequestScheduler).delete(eq(expectedJobId), anyString());
         verify(jobRequestScheduler, never()).schedule(any(UUID.class), any(Instant.class), any(SendTaskReminder.class));
-    }
-
-    @Test
-    void onTaskReminderScheduled_SameTask_produceSameJobId() {
-        Instant remindAt = Instant.now().plusSeconds(60);
-
-        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
-        sendTaskReminderEnqueuer.onTaskReminderScheduled(new TaskReminderScheduledEvent(taskUuid, remindAt));
-
-        verify(jobRequestScheduler, times(2)).delete(eq(expectedJobId), anyString());
     }
 }

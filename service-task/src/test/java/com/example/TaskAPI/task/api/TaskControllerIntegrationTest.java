@@ -1,6 +1,6 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseIntegrationTest;
+import com.example.TaskAPI.core.BaseWebIntegrationTest;
 import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
 import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
-public class TaskControllerIntegrationTest extends BaseIntegrationTest {
+public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
     @Autowired
     private AuditLogRepository auditLogRepository;
     @MockitoBean

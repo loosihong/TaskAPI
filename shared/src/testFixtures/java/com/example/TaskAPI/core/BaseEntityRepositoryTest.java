@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.fail;
 @RecordApplicationEvents
 public abstract class BaseEntityRepositoryTest<T extends BaseEntity> extends BaseRepositoryTest {
     @Autowired
-    private ApplicationEvents applicationEvents;
+    protected ApplicationEvents applicationEvents;
 
     protected void assertCreationData(T entity) {
         assertThat(entity.getVersion()).isEqualTo(0L);

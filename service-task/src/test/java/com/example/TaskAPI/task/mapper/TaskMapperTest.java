@@ -84,7 +84,7 @@ public class TaskMapperTest extends BaseMapperTest {
     }
 
     @Test
-    void toDetailResponse_mapsTaskTask() {
+    void toDetailResponse_mapsTask() {
         TaskDetail taskDetail = TaskDetail.builder()
                 .dueDate(LocalDate.now().plusDays(1))
                 .description("For lunch")
