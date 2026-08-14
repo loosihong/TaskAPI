@@ -11,7 +11,8 @@ public final class SecurityUtils {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null
-                || !auth.isAuthenticated()) {
+                || !auth.isAuthenticated()
+                || !(auth.getPrincipal() instanceof CustomUserDetails)) {
             throw new IllegalStateException("Authentication required");
         }
 

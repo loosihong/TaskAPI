@@ -1,11 +1,11 @@
 package com.example.TaskAPI.task.batch;
 
-import com.example.TaskAPI.core.BaseIntegrationTest;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;
 import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.repository.TaskRepository;
+import com.example.TaskAPI.web.BaseIntegrationTest;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;

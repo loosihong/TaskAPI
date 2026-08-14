@@ -1,4 +1,4 @@
-package com.example.TaskAPI.core;
+package com.example.TaskAPI.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

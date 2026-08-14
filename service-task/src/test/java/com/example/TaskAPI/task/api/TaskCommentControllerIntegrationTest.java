@@ -1,9 +1,9 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseWebIntegrationTest;
 import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.enums.TaskStatus;
+import com.example.TaskAPI.web.BaseWebIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 

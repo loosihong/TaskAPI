@@ -1,4 +1,4 @@
-package com.example.TaskAPI.infrastructure.config;
+package com.example.TaskAPI;
 
 import com.example.TaskAPI.core.BaseDatabaseCleanup;
 import com.example.TaskAPI.core.audit.AuditFieldLog;

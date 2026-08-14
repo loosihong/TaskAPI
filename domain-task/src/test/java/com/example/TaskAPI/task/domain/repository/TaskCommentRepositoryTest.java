@@ -1,11 +1,9 @@
-package com.example.TaskAPI.task.domain;
+package com.example.TaskAPI.task.domain.repository;
 
 import com.example.TaskAPI.core.BaseEntityRepositoryTest;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskComment;
 import com.example.TaskAPI.task.domain.enums.TaskStatus;
-import com.example.TaskAPI.task.domain.repository.TaskCommentRepository;
-import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

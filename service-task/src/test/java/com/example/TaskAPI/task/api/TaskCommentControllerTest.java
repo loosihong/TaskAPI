@@ -1,6 +1,5 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseControllerTest;
 import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.api.dto.TaskCommentResponse;
@@ -9,6 +8,7 @@ import com.example.TaskAPI.task.domain.entity.TaskComment;
 import com.example.TaskAPI.task.domain.query.TaskCommentListItem;
 import com.example.TaskAPI.task.mapper.TaskCommentMapper;
 import com.example.TaskAPI.task.service.TaskCommentService;
+import com.example.TaskAPI.web.BaseControllerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

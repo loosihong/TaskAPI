@@ -1,12 +1,9 @@
-package com.example.TaskAPI.auth;
+package com.example.TaskAPI.auth.api;
 
-import com.example.TaskAPI.auth.api.AuthController;
-import com.example.TaskAPI.auth.api.AuthRequest;
-import com.example.TaskAPI.auth.api.AuthResponse;
 import com.example.TaskAPI.auth.service.AuthService;
-import com.example.TaskAPI.core.BaseControllerTest;
 import com.example.TaskAPI.core.exception.DuplicateEntityException;
 import com.example.TaskAPI.infrastructure.security.SecurityConfig;
+import com.example.TaskAPI.web.BaseControllerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

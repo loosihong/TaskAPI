@@ -1,11 +1,11 @@
 package com.example.TaskAPI.infrastructure.security;
 
-import com.example.TaskAPI.core.BaseControllerTest;
 import com.example.TaskAPI.task.api.TaskController;
 import com.example.TaskAPI.task.mapper.TaskCommentMapperImpl;
 import com.example.TaskAPI.task.mapper.TaskMapperImpl;
 import com.example.TaskAPI.task.service.TaskCommentService;
 import com.example.TaskAPI.task.service.TaskService;
+import com.example.TaskAPI.web.BaseControllerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -65,5 +65,14 @@ public class TaskSecurityTest extends BaseControllerTest {
                         .header("Authorization", "Bearer fake.token.value"))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void getTasks_withInvalidToken_returns401() throws Exception {
+        when(jwtService.isTokenValid(anyString())).thenReturn(false);
+
+        mockMvc.perform(get("/tasks")
+                        .header("Authorization", "Bearer fake.token.value"))
+                .andExpect(status().isUnauthorized());
     }
 }

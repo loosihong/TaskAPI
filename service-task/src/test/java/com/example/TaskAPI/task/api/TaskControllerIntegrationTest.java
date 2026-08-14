@@ -1,6 +1,5 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseWebIntegrationTest;
 import com.example.TaskAPI.core.audit.AuditLogRepository;
 import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
 import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
@@ -13,6 +12,7 @@ import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
 import com.example.TaskAPI.task.scheduler.SendTaskReminder;
 import com.example.TaskAPI.user.domain.entity.User;
+import com.example.TaskAPI.web.BaseWebIntegrationTest;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

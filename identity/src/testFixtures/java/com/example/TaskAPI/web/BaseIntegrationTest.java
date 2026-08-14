@@ -1,6 +1,8 @@
-package com.example.TaskAPI.core;
+package com.example.TaskAPI.web;
 
 import com.example.TaskAPI.auth.service.AuthService;
+import com.example.TaskAPI.core.BaseDatabaseCleanup;
+import com.example.TaskAPI.core.SyncAuditExecutorConfig;
 import com.example.TaskAPI.infrastructure.config.TestcontainersConfig;
 import com.example.TaskAPI.user.domain.entity.User;
 import org.junit.jupiter.api.AfterAll;

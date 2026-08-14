@@ -1,4 +1,4 @@
-package com.example.TaskAPI.core;
+package com.example.TaskAPI.web;
 
 import com.example.TaskAPI.core.exception.GlobalExceptionHandler;
 import com.example.TaskAPI.infrastructure.security.CustomUserDetailsService;

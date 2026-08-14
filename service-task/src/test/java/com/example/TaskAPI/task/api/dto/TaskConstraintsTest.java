@@ -1,8 +1,6 @@
-package com.example.TaskAPI.task.domain;
+package com.example.TaskAPI.task.api.dto;
 
 import com.example.TaskAPI.core.BaseConstraintsTest;
-import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
-import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.enums.Priority;

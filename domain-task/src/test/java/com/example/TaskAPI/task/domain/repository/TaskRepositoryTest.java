@@ -1,4 +1,4 @@
-package com.example.TaskAPI.task.domain;
+package com.example.TaskAPI.task.domain.repository;
 
 import com.example.TaskAPI.core.BaseEntityRepositoryTest;
 import com.example.TaskAPI.core.audit.AuditEntry;
@@ -14,7 +14,6 @@ import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
 import com.example.TaskAPI.task.domain.query.TaskPredicateBuilder;
-import com.example.TaskAPI.task.domain.repository.TaskRepository;
 import com.example.TaskAPI.user.UserTestSupport;
 import com.example.TaskAPI.user.domain.entity.User;
 import org.junit.jupiter.api.AfterEach;

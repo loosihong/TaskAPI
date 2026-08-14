@@ -49,6 +49,13 @@
         <Class name="~.*\.entity\..*"/>
     </Match>
 
+    <!-- Test entities carry fields that exist to be read reflectively by the
+         audit listener; SpotBugs sees only the writes. -->
+    <Match>
+        <Bug pattern="URF_UNREAD_FIELD,URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+        <Class name="~.*Test\$.*"/>
+    </Match>
+
     <!-- Known, accepted tradeoff: @ManyToOne EAGER fetch is required alongside
          @SoftDelete (Hibernate limitation, not a bug) - SpotBugs doesn't have a
          dedicated bug pattern for this, documented here for visibility rather

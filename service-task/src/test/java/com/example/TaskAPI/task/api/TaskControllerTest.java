@@ -1,6 +1,5 @@
 package com.example.TaskAPI.task.api;
 
-import com.example.TaskAPI.core.BaseControllerTest;
 import com.example.TaskAPI.core.exception.DataValidationException;
 import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
@@ -22,6 +21,7 @@ import com.example.TaskAPI.task.mapper.TaskMapper;
 import com.example.TaskAPI.task.service.TaskCommentService;
 import com.example.TaskAPI.task.service.TaskService;
 import com.example.TaskAPI.user.api.dto.UserResponse;
+import com.example.TaskAPI.web.BaseControllerTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

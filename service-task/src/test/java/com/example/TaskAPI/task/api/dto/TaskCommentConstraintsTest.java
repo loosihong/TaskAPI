@@ -1,7 +1,6 @@
-package com.example.TaskAPI.task.domain;
+package com.example.TaskAPI.task.api.dto;
 
 import com.example.TaskAPI.core.BaseConstraintsTest;
-import com.example.TaskAPI.task.api.dto.TaskCommentRequest;
 import com.example.TaskAPI.task.domain.entity.TaskComment;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
