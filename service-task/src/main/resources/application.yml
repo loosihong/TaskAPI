@@ -16,6 +16,14 @@ spring:
     jdbc:
       initialize-schema: always
       table-prefix: BATCH_
+  http:
+    client:
+      service:
+        connect-timeout: 5s
+        read-timeout: 20s
+        group:
+          hackerrank:
+            base-url: ${HACKERRANK_BASE_URL}
 
 springdoc:
   api-docs:

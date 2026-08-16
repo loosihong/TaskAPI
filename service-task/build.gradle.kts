@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":domain-user"))
     implementation(project(":shared"))
     implementation(project(":identity"))
+    implementation(project(":integration-hackerrank"))
     // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
     // arrive transitively through the modules above - not redeclared here.
 
