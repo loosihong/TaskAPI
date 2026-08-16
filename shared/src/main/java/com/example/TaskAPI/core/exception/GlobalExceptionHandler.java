@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -57,6 +58,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<String> handleDataValidation(DataValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodValidationErrors(
+            HandlerMethodValidationException ex) {
+        Map<String, String> parameterErrors = new HashMap<>();
+
+        ex.getParameterValidationResults().forEach(result ->
+                result.getResolvableErrors().forEach(error ->
+                        parameterErrors.put(
+                                result.getMethodParameter().getParameterName(),
+                                error.getDefaultMessage())));
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now().toString());
+        body.put("status", 400);
+        body.put("errors", parameterErrors);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     @ExceptionHandler(Exception.class)
