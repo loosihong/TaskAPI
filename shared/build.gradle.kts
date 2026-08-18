@@ -19,7 +19,7 @@ dependencies {
     // GlobalExceptionHandler needs spring-web (@RestControllerAdvice, ResponseEntity)
     // and spring-security-core (BadCredentialsException). Nothing shared re-exposes
     // these publicly, so implementation is enough.
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.security:spring-security-core")
 
     compileOnly(libs.lombok)

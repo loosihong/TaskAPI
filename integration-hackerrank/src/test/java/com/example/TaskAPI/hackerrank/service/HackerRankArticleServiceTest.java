@@ -4,15 +4,14 @@ import com.example.TaskAPI.hackerrank.client.HackerRankArticleClient;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankArticle;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankPage;
 import com.example.TaskAPI.hackerrank.exception.HackerRankApiException;
+import com.example.TaskAPI.hackerrank.exception.HackerRankUnavailableException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.util.List;
@@ -28,8 +27,12 @@ import static org.mockito.Mockito.when;
 public class HackerRankArticleServiceTest {
     @Mock
     private HackerRankArticleClient articleClient;
-    @InjectMocks
     private HackerRankArticleService articleService;
+
+    @BeforeEach
+    public void setUp() {
+        articleService = new HackerRankArticleService(articleClient);
+    }
 
     private HackerRankPage<HackerRankArticle> pageOf(int page, int totalPages, HackerRankArticle... articles) {
         return new HackerRankPage<>(page, 10, totalPages * 10, totalPages, List.of(articles));
@@ -89,23 +92,23 @@ public class HackerRankArticleServiceTest {
         }
 
         @Test
-        void fetchPage_upstreamReturnsError_throwsHackerRankApiException() {
+        void fetchPage_transientFailureThenSuccess_returnsPage() {
             when(articleClient.fetchPage(1))
-                    .thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
+                    .thenThrow(new ResourceAccessException("connect timed out"))
+                    .thenReturn(pageOf(1, 1, titled("One")));
 
-            assertThatThrownBy(() -> articleService.fetchPage(1))
-                    .isInstanceOf(HackerRankApiException.class)
-                    .hasMessageContaining("503");
+            assertThat(articleService.fetchPage(1).data()).hasSize(1);
+            verify(articleClient, times(2)).fetchPage(1);
         }
 
         @Test
-        void fetchPage_upstreamUnreachable_throwsHackerRankApiException() {
+        void fetchPage_clientError_isNotRetried() {
             when(articleClient.fetchPage(1))
-                    .thenThrow(new ResourceAccessException("connect timed out"));
+                    .thenThrow(new HackerRankApiException("HackerRank 400: ", null));
 
             assertThatThrownBy(() -> articleService.fetchPage(1))
-                    .isInstanceOf(HackerRankApiException.class)
-                    .hasMessageContaining("unreachable");
+                    .isInstanceOf(HackerRankApiException.class);
+            verify(articleClient, times(1)).fetchPage(1);
         }
     }
 
@@ -163,11 +166,11 @@ public class HackerRankArticleServiceTest {
             when(articleClient.fetchPage(1))
                     .thenReturn(pageOf(1, 3, titled("One")));
             when(articleClient.fetchPage(2))
-                    .thenThrow(new HttpServerErrorException(HttpStatus.BAD_GATEWAY));
+                    .thenThrow(new HackerRankUnavailableException("HackerRank 503: ", null));
 
             assertThatThrownBy(() -> articleService.fetchAllTitledArticles())
-                    .isInstanceOf(HackerRankApiException.class);
-            verify(articleClient, times(2)).fetchPage(anyInt());
+                    .isInstanceOf(HackerRankUnavailableException.class);
+            verify(articleClient, times(4)).fetchPage(anyInt());
         }
     }
 }

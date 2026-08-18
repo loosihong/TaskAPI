@@ -3,11 +3,13 @@ package com.example.TaskAPI.hackerrank.api;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankArticle;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankPage;
 import com.example.TaskAPI.hackerrank.exception.HackerRankApiException;
+import com.example.TaskAPI.hackerrank.exception.HackerRankUnavailableException;
 import com.example.TaskAPI.hackerrank.service.HackerRankArticleService;
 import com.example.TaskAPI.web.BaseControllerTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,11 +54,22 @@ public class HackerRankArticleControllerTest extends BaseControllerTest {
     @Test
     void getArticles_upstreamsFails_returns502() throws Exception {
         when(articleService.fetchPage(1))
-                .thenThrow(new HackerRankApiException("upstream down", new RuntimeException()));
+                .thenThrow(new HackerRankApiException("HackerRank 400: ", null));
 
         mockMvc.perform(get("/integrations/hackerrank/articles"))
                 .andExpect(status().isBadGateway())
-                .andExpect(jsonPath("$.error").value("Upstream integration unavailable"));
+                .andExpect(jsonPath("$.status").value(HttpStatus.BAD_GATEWAY.toString()))
+                .andExpect(jsonPath("$.error").value("Upstream integration failed"));
+    }
+
+    @Test
+    void getArticles_upstreamsFails_returns503() throws Exception {
+        when(articleService.fetchPage(1))
+                .thenThrow(new HackerRankUnavailableException("upstream down", null));
+
+        mockMvc.perform(get("/integrations/hackerrank/articles"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(header().string("Retry-After", "30"));
     }
 
     @Test

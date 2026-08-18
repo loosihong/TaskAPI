@@ -22,7 +22,7 @@ dependencies {
     annotationProcessor(platform(libs.spring.boot.dependencies))
     testImplementation(platform(libs.testcontainers.bom))
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-batch-jdbc")
 

@@ -4,27 +4,39 @@ import com.example.TaskAPI.hackerrank.client.HackerRankArticleClient;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankArticle;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankPage;
 import com.example.TaskAPI.hackerrank.exception.HackerRankApiException;
-import lombok.RequiredArgsConstructor;
+import com.example.TaskAPI.hackerrank.exception.HackerRankUnavailableException;
+import org.springframework.core.retry.RetryPolicy;
+import org.springframework.core.retry.RetryTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class HackerRankArticleService {
     private static final int MAX_PAGES = 20;
+    private static final int MAX_RETIRES = 2;
 
     private final HackerRankArticleClient articleClient;
+    private final RetryTemplate retryTemplate;
+
+    public HackerRankArticleService(HackerRankArticleClient articleClient) {
+        this.articleClient = articleClient;
+        this.retryTemplate = new RetryTemplate(RetryPolicy.builder()
+                .includes(HackerRankUnavailableException.class, ResourceAccessException.class)
+                .maxRetries(MAX_RETIRES)
+                .delay(Duration.ofMillis(200))
+                .jitter(Duration.ofMillis(50))
+                .multiplier(2)
+                .maxDelay(Duration.ofSeconds(2))
+                .build());
+    }
 
     public HackerRankPage<HackerRankArticle> fetchPage(int page) {
         try {
-            return articleClient.fetchPage(page);
-        } catch (RestClientResponseException ex) {
-            throw new HackerRankApiException(
-                    "HackerRank returned " + ex.getStatusCode() + "for page " + page, ex);
+            return retryTemplate.invoke(() -> articleClient.fetchPage(page));
         } catch (ResourceAccessException ex) {
             throw new HackerRankApiException("HackerRank is unreachable", ex);
         }
