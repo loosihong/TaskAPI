@@ -5,6 +5,7 @@ import com.example.TaskAPI.hackerrank.client.dto.HackerRankArticle;
 import com.example.TaskAPI.hackerrank.client.dto.HackerRankPage;
 import com.example.TaskAPI.hackerrank.exception.HackerRankApiException;
 import com.example.TaskAPI.hackerrank.exception.HackerRankUnavailableException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.retry.RetryPolicy;
 import org.springframework.core.retry.RetryTemplate;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Service
 public class HackerRankArticleService {
-    private static final int MAX_PAGES = 20;
+    public static final int MAX_PAGES = 20;
     private static final int MAX_RETIRES = 2;
 
     private final HackerRankArticleClient articleClient;
@@ -34,6 +35,7 @@ public class HackerRankArticleService {
                 .build());
     }
 
+    @Cacheable(cacheNames = "hackerrank-articles", key = "#p0", sync = true)
     public HackerRankPage<HackerRankArticle> fetchPage(int page) {
         try {
             return retryTemplate.invoke(() -> articleClient.fetchPage(page));

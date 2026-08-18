@@ -25,6 +25,10 @@ spring:
       hackerrank:
         base-url: ${HACKERRANK_BASE_URL}
         read-timeout: 5s
+  cache:
+    cache-names: hackerrank-articles
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
 
 springdoc:
   api-docs:
@@ -52,3 +56,9 @@ jobrunr:
     default-number-of-retries: 5
   miscellaneous:
     allow-anonymous-data-usage: false
+
+logging:
+  level:
+    org:
+      springframework:
+        cache: TRACE

@@ -158,7 +158,7 @@ public class HackerRankArticleServiceTest {
 
             articleService.fetchAllTitledArticles();
 
-            verify(articleClient, times(20)).fetchPage(anyInt());
+            verify(articleClient, times(HackerRankArticleService.MAX_PAGES)).fetchPage(anyInt());
         }
 
         @Test

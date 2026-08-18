@@ -9,11 +9,13 @@ springdoc = "3.0.3"
 testcontainers = "1.20.4"
 mockito = "5.20.0"
 jobrunr = "8.8.0"
+caffeine = "3.2.2"
 
 [libraries]
 # BOM Platforms
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 
 # Standard Libraries
 jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }

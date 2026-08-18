@@ -3,6 +3,7 @@ package com.example.TaskAPI.hackerrank.api;
 import com.example.TaskAPI.hackerrank.api.dto.HackerRankArticleResponse;
 import com.example.TaskAPI.hackerrank.service.HackerRankArticleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class HackerRankArticleController {
 
     @GetMapping("articles")
     public ResponseEntity<List<HackerRankArticleResponse>> getArticles(
-            @RequestParam(defaultValue = "1") @Min(1) int pageNum) {
+            @RequestParam(defaultValue = "1") @Min(1) @Max(HackerRankArticleService.MAX_PAGES) int pageNum) {
         return ResponseEntity.ok(
                 articleService.fetchPage(pageNum).data().stream()
                         .map(HackerRankArticleResponse::from)
