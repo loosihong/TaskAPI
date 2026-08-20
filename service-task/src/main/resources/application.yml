@@ -7,7 +7,6 @@ spring:
     password: ${APP_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
-    show-sql: ${JPA_SHOW_SQL}
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO}
   batch:
@@ -59,6 +58,5 @@ jobrunr:
 
 logging:
   level:
-    org:
-      springframework:
-        cache: TRACE
+    root: INFO
+    com.example.TaskAPI: INFO
