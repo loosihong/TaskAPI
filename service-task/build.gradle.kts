@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":identity"))
     implementation(project(":integration-hackerrank"))
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
     implementation(libs.caffeine)
     // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
     // arrive transitively through the modules above - not redeclared here.

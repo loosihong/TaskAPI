@@ -2,3 +2,12 @@ logging:
   level:
     com.example.TaskAPI: DEBUG
     sql: DEBUG
+
+management:
+  tracing:
+    export:
+      enabled: false
+  otlp:
+    metrics:
+      export:
+        enabled: false

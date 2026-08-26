@@ -37,3 +37,13 @@ jobrunr:
     enabled: false
   dashboard:
     enabled: false
+
+management:
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE_RATE}
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTLP_ENDPOINT}
