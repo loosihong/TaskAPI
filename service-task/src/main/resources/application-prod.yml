@@ -1,0 +1,12 @@
+spring:
+  main:
+    banner-mode: off
+
+  logging:
+    structured:
+      format:
+        console: ecs
+    level:
+      root: INFO
+      com.example.TaskAPI: INFO
+      org.hibernate.SQL: WARN

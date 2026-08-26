@@ -17,9 +17,8 @@ spring:
       table-prefix: BATCH_
   http:
     clients:
-      service:
-        connect-timeout: 5s
-        read-timeout: 20s
+      connect-timeout: 5s
+      read-timeout: 20s
     serviceclient:
       hackerrank:
         base-url: ${HACKERRANK_BASE_URL}
@@ -60,3 +59,13 @@ logging:
   level:
     root: INFO
     com.example.TaskAPI: INFO
+  structured:
+    ecs:
+      service:
+        environment: ${APP_ENV:local}
+    json:
+      stacktrace:
+        root: first
+        max-length: 4096
+        include-common-frames: false
+        include-hashes: true
