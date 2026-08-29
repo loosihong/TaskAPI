@@ -10,6 +10,7 @@ testcontainers = "1.20.4"
 mockito = "5.20.0"
 jobrunr = "8.8.0"
 caffeine = "3.2.2"
+datasourceProxy = "1.11.0"
 
 [libraries]
 # BOM Platforms
@@ -30,6 +31,7 @@ querydsl-apt = { module = "com.querydsl:querydsl-apt", version.ref = "querydsl" 
 springdoc-openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 jobrunr-spring = { module = "org.jobrunr:jobrunr-spring-boot-4-starter", version.ref = "jobrunr" }
+datasource-proxy = { module = "net.ttddyy:datasource-proxy", version.ref = "datasourceProxy" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

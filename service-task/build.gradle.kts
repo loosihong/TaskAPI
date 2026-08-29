@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.springdoc.openapi)
     implementation(libs.jobrunr.spring)
     implementation(libs.mapstruct.core)
+    implementation(libs.datasource.proxy)
     // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
     // arrive transitively through the modules above - not redeclared here.
     implementation(platform(libs.spring.boot.dependencies))

@@ -9,6 +9,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO}
+    properties:
+      hibernate:
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 100
   batch:
     job:
       enabled: false
@@ -46,7 +52,7 @@ jobrunr:
     enabled: true
   dashboard:
     enabled: true
-    port: 8000
+    port: ${JOBRUNR_PORT:8000}
   database:
     skip-create: false
     table-prefix: "jobrunr_task."
@@ -59,6 +65,8 @@ logging:
   level:
     root: INFO
     com.example.TaskAPI: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
   structured:
     ecs:
       service:
