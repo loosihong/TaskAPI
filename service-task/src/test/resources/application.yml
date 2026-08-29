@@ -41,9 +41,9 @@ jobrunr:
 management:
   tracing:
     sampling:
-      probability: ${TRACING_SAMPLE_RATE}
+      probability: 1.0
   opentelemetry:
     tracing:
       export:
         otlp:
-          endpoint: ${OTLP_ENDPOINT}
+          endpoint: http://localhost:4318/v1/traces

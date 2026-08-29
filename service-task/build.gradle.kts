@@ -17,23 +17,22 @@ dependencies {
     implementation(project(":integration-hackerrank"))
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
-    implementation(libs.caffeine)
-    // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
-    // arrive transitively through the modules above - not redeclared here.
-
-    implementation(platform(libs.spring.boot.dependencies))
-    annotationProcessor(platform(libs.spring.boot.dependencies))
-    testImplementation(platform(libs.testcontainers.bom))
-
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-batch-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
+    implementation(libs.caffeine)
     implementation(libs.springdoc.openapi)
     implementation(libs.jobrunr.spring)
     implementation(libs.mapstruct.core)
+    // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
+    // arrive transitively through the modules above - not redeclared here.
+    implementation(platform(libs.spring.boot.dependencies))
+
     compileOnly(libs.lombok)
 
+    annotationProcessor(platform(libs.spring.boot.dependencies))
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.lombok.mapstruct.binding)
     annotationProcessor(libs.mapstruct.processor)
@@ -41,6 +40,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":shared")))
     testImplementation(testFixtures(project(":identity")))
+    testImplementation(platform(libs.testcontainers.bom))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
