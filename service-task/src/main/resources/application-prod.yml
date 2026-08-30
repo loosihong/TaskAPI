@@ -10,3 +10,8 @@ logging:
     root: INFO
     com.example.TaskAPI: INFO
     org.hibernate.SQL: WARN
+
+management:
+  tracing:
+    sampling:
+      probability: 0.1

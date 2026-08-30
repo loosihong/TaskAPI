@@ -14,12 +14,15 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<String> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
+        log.warn("Optimistic lock conflict", ex);
+
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body("Task was modified by another request. Please fetch the latest version and retry.");
     }
@@ -27,6 +30,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(
             MethodArgumentNotValidException ex) {
+        log.debug("Validation failed", ex);
+
         Map<String, String> fieldErrors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             fieldErrors.put(error.getField(), error.getDefaultMessage());
@@ -42,27 +47,37 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
+        log.debug("Entity not found: {}", ex.getMessage());
+
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(DuplicateEntityException.class)
     public ResponseEntity<String> handleDuplicateEntity(DuplicateEntityException ex) {
+        log.debug("Duplicate entity: {}", ex.getMessage());
+
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
+        log.debug("Authentication failed");
+
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
     }
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<String> handleDataValidation(DataValidationException ex) {
+        log.debug("Data validation failed: {}", ex.getMessage());
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<Map<String, Object>> handleMethodValidationErrors(
             HandlerMethodValidationException ex) {
+        log.debug("Parameter validation failed", ex);
+
         Map<String, String> parameterErrors = new HashMap<>();
 
         ex.getParameterValidationResults().forEach(result ->
@@ -81,11 +96,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericError(Exception ex) {
-        log.error("Unexpected error", ex);
+        String errorId = UUID.randomUUID().toString();
+
+        log.atError()
+                .setMessage("Unhandled exception")
+                .addKeyValue("error.id", errorId)
+                .setCause(ex)
+                .log();
+
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now().toString());
         body.put("status", 500);
         body.put("error", "An unexpected error occurred");
+        body.put("errorId", errorId);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
