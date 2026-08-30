@@ -13,6 +13,7 @@ plugins {
 rootProject.name = "TaskAPI"
 
 include("shared")
+include("shared-security")
 include("domain-user")
 include("domain-task")
 include("identity")

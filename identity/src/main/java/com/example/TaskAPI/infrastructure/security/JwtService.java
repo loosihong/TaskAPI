@@ -2,12 +2,14 @@ package com.example.TaskAPI.infrastructure.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +19,9 @@ import java.util.HexFormat;
 
 @Service
 public final class JwtService {
+    public static final String CLAIM_USER_ID = "uid";
+    public static final String CLAIM_ROLES = "roles";
+
     private final SecretKey secretKey;
     private final long expirationsMs;
 
@@ -29,12 +34,20 @@ public final class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim(CLAIM_ROLES, userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationsMs))
-                .signWith(secretKey)
-                .compact();
+                .signWith(secretKey);
+
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            builder.claim(CLAIM_USER_ID, customUserDetails.getId());
+        }
+
+        return builder.compact();
     }
 
     public boolean isTokenValid(String token) {
