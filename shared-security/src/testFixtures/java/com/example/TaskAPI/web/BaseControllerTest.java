@@ -1,8 +1,7 @@
 package com.example.TaskAPI.web;
 
 import com.example.TaskAPI.core.exception.GlobalExceptionHandler;
-import com.example.TaskAPI.infrastructure.security.CustomUserDetailsService;
-import com.example.TaskAPI.infrastructure.security.JwtService;
+import com.example.TaskAPI.security.JwtVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
@@ -17,10 +16,7 @@ public abstract class BaseControllerTest {
     protected MockMvc mockMvc;
 
     @MockitoBean
-    protected JwtService jwtService;
-
-    @MockitoBean
-    protected CustomUserDetailsService customUserDetailsService;
+    protected JwtVerifier jwtVerifier;
 
     @Autowired
     protected ObjectMapper objectMapper;

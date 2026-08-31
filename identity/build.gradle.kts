@@ -1,6 +1,5 @@
 plugins {
     `java-library`
-    `java-test-fixtures`
 }
 
 val mockitoAgent: Configuration by configurations.creating
@@ -8,18 +7,12 @@ val mockitoAgent: Configuration by configurations.creating
 dependencies {
     api(project(":domain-user")) // AuthService.register() returns User
     api(project(":shared"))      // CustomUserDetails implements AuditablePrincipal
+    api(project(":shared-security"))
 
     api(platform(libs.spring.boot.dependencies))
     annotationProcessor(platform(libs.spring.boot.dependencies))
 
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    implementation(libs.jjwt.api)
-    runtimeOnly(libs.jjwt.impl)
-    runtimeOnly(libs.jjwt.jackson)
-
     implementation(libs.springdoc.openapi)
 
     compileOnly(libs.lombok)
@@ -27,13 +20,8 @@ dependencies {
 
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
-
-    // --- testFixtures: AbstractSecuredIntegrationTest, BaseControllerTest ---
-    testFixturesApi(project(":shared"))                 // GlobalExceptionHandler (shared's main)
-    testFixturesApi(testFixtures(project(":shared")))   // TestcontainersConfig (shared's testFixtures)
-    testFixturesApi(platform(libs.spring.boot.dependencies))
-    testFixturesApi("org.springframework.boot:spring-boot-starter-test")
-    testFixturesApi("org.springframework.boot:spring-boot-starter-webmvc-test") // @AutoConfigureMockMvc
+    testImplementation(testFixtures(project(":shared-security")))
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test") // @AutoConfigureMockMvc
 
     testRuntimeOnly(platform(libs.spring.boot.dependencies))
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

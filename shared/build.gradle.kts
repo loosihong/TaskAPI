@@ -5,25 +5,25 @@ plugins {
 
 dependencies {
     api(platform(libs.spring.boot.dependencies))
-    annotationProcessor(platform(libs.spring.boot.dependencies))
-
-    // BaseEntity/BaseRecord/audit are JPA types every module needs to see -> api.
     api("org.springframework.boot:spring-boot-starter-data-jpa")
     api(variantOf(libs.querydsl.jpa) { classifier("jakarta") })
+
+    annotationProcessor(platform(libs.spring.boot.dependencies))
     annotationProcessor(variantOf(libs.querydsl.apt) { classifier("jakarta") })
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation(libs.mapstruct.core)
-    runtimeOnly("com.microsoft.sqlserver:mssql-jdbc")
+    annotationProcessor(libs.lombok)
 
-    // GlobalExceptionHandler needs spring-web (@RestControllerAdvice, ResponseEntity)
-    // and spring-security-core (BadCredentialsException). Nothing shared re-exposes
-    // these publicly, so implementation is enough.
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-security")
+    implementation(libs.mapstruct.core)
+    implementation(libs.datasource.proxy)
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.security:spring-security-core")
 
+    runtimeOnly("com.microsoft.sqlserver:mssql-jdbc")
+
     compileOnly(libs.lombok)
-    annotationProcessor(libs.lombok)
+
 
     testImplementation(platform(libs.spring.boot.dependencies))
     testImplementation("org.springframework.boot:spring-boot-starter-test")

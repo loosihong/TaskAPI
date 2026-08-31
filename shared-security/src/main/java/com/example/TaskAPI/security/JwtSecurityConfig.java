@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(JwtSecurityConfig.class)
+@EnableConfigurationProperties(JwtProperties.class)
 public class JwtSecurityConfig {
     @Bean
     public JwtVerifier jwtVerifier(JwtProperties properties) {
@@ -14,12 +14,12 @@ public class JwtSecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticaticationFilter(JwtVerifier verifier) {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtVerifier verifier) {
         return new JwtAuthenticationFilter(verifier);
     }
 
     @Bean
-    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistrationBean(
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistration(
             JwtAuthenticationFilter filter) {
         FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>(filter);
 

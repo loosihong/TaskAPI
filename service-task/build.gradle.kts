@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":domain-task"))
     implementation(project(":domain-user"))
     implementation(project(":shared"))
-    implementation(project(":identity"))
+    implementation(project(":shared-security"))
     implementation(project(":integration-hackerrank"))
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
@@ -27,7 +27,6 @@ dependencies {
     implementation(libs.springdoc.openapi)
     implementation(libs.jobrunr.spring)
     implementation(libs.mapstruct.core)
-    implementation(libs.datasource.proxy)
     // JPA, the MSSQL driver, QueryDSL's runtime types, and Spring Security all
     // arrive transitively through the modules above - not redeclared here.
     implementation(platform(libs.spring.boot.dependencies))
@@ -41,7 +40,7 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation(testFixtures(project(":shared")))
-    testImplementation(testFixtures(project(":identity")))
+    testImplementation(testFixtures(project(":shared-security")))
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

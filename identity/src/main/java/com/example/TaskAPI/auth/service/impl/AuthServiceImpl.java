@@ -3,13 +3,14 @@ package com.example.TaskAPI.auth.service.impl;
 import com.example.TaskAPI.auth.api.AuthResponse;
 import com.example.TaskAPI.auth.service.AuthService;
 import com.example.TaskAPI.core.exception.DuplicateEntityException;
+import com.example.TaskAPI.infrastructure.security.CustomUserDetails;
 import com.example.TaskAPI.infrastructure.security.CustomUserDetailsService;
-import com.example.TaskAPI.infrastructure.security.JwtService;
+import com.example.TaskAPI.security.JwtIssuer;
 import com.example.TaskAPI.user.domain.entity.User;
 import com.example.TaskAPI.user.domain.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,19 +18,19 @@ import org.springframework.stereotype.Service;
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final JwtIssuer jwtIssuer;
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
 
     public AuthServiceImpl(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService,
+            JwtIssuer jwtIssuer,
             AuthenticationManager authenticationManager,
             CustomUserDetailsService userDetailsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
+        this.jwtIssuer = jwtIssuer;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
     }
@@ -49,8 +50,13 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(String username, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        String token = jwtService.generateToken(userDetails);
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
+        String token = jwtIssuer.issue(
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList());
 
         return AuthResponse.builder()
                 .token(token)

@@ -2,7 +2,7 @@ package com.example.TaskAPI.task.service;
 
 import com.example.TaskAPI.core.exception.DataValidationException;
 import com.example.TaskAPI.core.exception.EntityNotFoundException;
-import com.example.TaskAPI.infrastructure.security.SecurityUtils;
+import com.example.TaskAPI.security.SecurityUtils;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
