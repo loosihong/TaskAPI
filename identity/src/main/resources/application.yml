@@ -1,6 +1,6 @@
 spring:
   application:
-    name: ${TASK_APP_NAME}
+    name: ${IDENTITY_APP_NAME:taskapi-identity}
   datasource:
     url: jdbc:sqlserver://localhost:${MSSQL_PORT};databaseName=${DB_NAME};encrypt=false
     username: ${APP_USER}
@@ -8,57 +8,18 @@ spring:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
     hibernate:
-      ddl-auto: ${TASK_JPA_DDL_AUTO}
-    properties:
-      hibernate:
-        session:
-          events:
-            log:
-              LOG_QUERIES_SLOWER_THAN_MS: 100
-  batch:
-    job:
-      enabled: false
-    jdbc:
-      initialize-schema: always
-      table-prefix: BATCH_
-  http:
-    clients:
-      connect-timeout: 5s
-      read-timeout: 20s
-    serviceclient:
-      hackerrank:
-        base-url: ${HACKERRANK_BASE_URL}
-        read-timeout: 5s
-  cache:
-    cache-names: hackerrank-articles
-    caffeine:
-      spec: maximumSize=100,expireAfterWrite=10m
+      ddl-auto: ${IDENTITY_JPA_DDL_AUTO}
 
 springdoc:
   api-docs:
     path: /api-docs
 
 server:
-  port: ${TASK_APP_PORT}
+  port: ${IDENTITY_APP_PORT}
 
 jwt:
   secret: ${JWT_SECRET}
-
-jobrunr:
-  job-scheduler:
-    enabled: true
-  background-job-server:
-    enabled: true
-  dashboard:
-    enabled: true
-    port: ${JOBRUNR_PORT:8000}
-  database:
-    skip-create: false
-    table-prefix: "jobrunr_task."
-  jobs:
-    default-number-of-retries: 5
-  miscellaneous:
-    allow-anonymous-data-usage: false
+  expiration: ${JWT_EXPIRATION:3600000}
 
 logging:
   level:
@@ -97,9 +58,4 @@ management:
       endpoint: ${OTLP_ENDPOINT:http://localhost:4318/v1/traces}
   metrics:
     tags:
-      application: ${TASK_APP_NAME}
-    distribution:
-      percentiles-histogram:
-        http.server.requests: true
-      slo:
-        http.server.requests: 50ms,100ms,300ms,500ms,1s,2s
+      application: ${IDENTITY_APP_NAME}
