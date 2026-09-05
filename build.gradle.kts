@@ -102,3 +102,9 @@ subprojects {
         }
     }
 }
+
+tasks.register("bootRunAll") {
+    group = "application"
+    description = "Runs every Spring Boot service in parallel."
+    dependsOn(":service-identity:bootRun", ":service-task:bootRun")
+}

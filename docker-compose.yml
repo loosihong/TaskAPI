@@ -1,7 +1,7 @@
 services:
   mssql-dev:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: ${CONTAINER_NAME}
+    container_name: ${DB_CONTAINER_NAME}
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Developer"
@@ -17,10 +17,63 @@ services:
       - ./docker/mssql/init/01-init.sql:/docker-entrypoint-initdb.d/01-init.sql
     entrypoint: /bin/bash /entrypoint.sh
     healthcheck:
-      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${MSSQL_SA_PASSWORD}", "-Q", "SELECT 1", "-No" ]
+      test: [ "CMD-SHELL", "test -f /tmp/init-complete && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -No" ]
       interval: 10s
       timeout: 5s
       retries: 10
+  service-identity:
+    profiles: [ "apps" ]
+    container_name: ${IDENTITY_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: service-identity/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mssql-dev
+      DB_PORT: 1433
+      DB_ENCRYPT: "false"
+      DB_TRUST_CERT: "true"
+      DB_NAME: ${DB_NAME}
+      APP_USER: ${APP_USER}
+      APP_PASSWORD: ${APP_PASSWORD}
+      IDENTITY_APP_NAME: ${IDENTITY_APP_NAME}
+      IDENTITY_APP_PORT: 8081
+      IDENTITY_JPA_DDL_AUTO: validate
+      JWT_SECRET: ${JWT_SECRET}
+      APP_ENV: dev
+    ports:
+      - "${IDENTITY_APP_PORT}:8081"
+    depends_on:
+      mssql-dev:
+        condition: service_healthy
+  service-task:
+    profiles: [ "apps" ]
+    container_name: ${TASK_CONTAINER_NAME}
+    build:
+      context: .
+      dockerfile: service-task/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mssql-dev
+      DB_PORT: 1433
+      DB_ENCRYPT: "false"
+      DB_TRUST_CERT: "true"
+      DB_NAME: ${DB_NAME}
+      APP_USER: ${APP_USER}
+      APP_PASSWORD: ${APP_PASSWORD}
+      TASK_APP_NAME: ${TASK_APP_NAME}
+      TASK_APP_PORT: 8080
+      TASK_JPA_DDL_AUTO: validate
+      JWT_SECRET: ${JWT_SECRET}
+      APP_ENV: dev
+      HACKERRANK_BASE_URL: ${HACKERRANK_BASE_URL}
+    ports:
+      - "${TASK_APP_PORT}:8080"
+    depends_on:
+      mssql-dev:
+        condition: service_healthy
+      service-identity:
+        condition: service_started
 
 volumes:
   mssql-data:

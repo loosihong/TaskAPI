@@ -2,13 +2,17 @@ spring:
   application:
     name: ${IDENTITY_APP_NAME:taskapi-identity}
   datasource:
-    url: jdbc:sqlserver://localhost:${MSSQL_PORT};databaseName=${DB_NAME};encrypt=false
+    url: jdbc:sqlserver://${DB_HOST}:${DB_PORT:1433};databaseName=${DB_NAME};encrypt=${DB_ENCRYPT};trustServerCertificate=${DB_TRUST_CERT}
     username: ${APP_USER}
     password: ${APP_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
     hibernate:
       ddl-auto: ${IDENTITY_JPA_DDL_AUTO}
+  flyway:
+    enabled: true
+    table: flyway_schema_history_identity
+    locations: classpath:db/migration/identity
 
 springdoc:
   api-docs:
@@ -26,7 +30,7 @@ logging:
     root: INFO
     com.example.TaskAPI: INFO
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
   structured:
     ecs:
       service:

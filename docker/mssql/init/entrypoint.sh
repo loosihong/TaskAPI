@@ -14,5 +14,6 @@ echo "MSSQL ready. Running init scripts..."
   -v DB_NAME="$DB_NAME" APP_USER="$APP_USER" APP_PASSWORD="$APP_PASSWORD" \
   -i /docker-entrypoint-initdb.d/01-init.sql -No
 
+touch /tmp/init-complete
 echo "Init complete."
 wait $MSSQL_PID

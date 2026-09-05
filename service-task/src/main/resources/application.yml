@@ -2,7 +2,7 @@ spring:
   application:
     name: ${TASK_APP_NAME}
   datasource:
-    url: jdbc:sqlserver://localhost:${MSSQL_PORT};databaseName=${DB_NAME};encrypt=false
+    url: jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=${DB_NAME};encrypt=${DB_ENCRYPT};trustServerCertificate=${DB_TRUST_CERT}
     username: ${APP_USER}
     password: ${APP_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
@@ -15,6 +15,10 @@ spring:
           events:
             log:
               LOG_QUERIES_SLOWER_THAN_MS: 100
+  flyway:
+    enabled: true
+    table: flyway_schema_history_identity
+    locations: classpath:db/migration/identity
   batch:
     job:
       enabled: false
@@ -65,7 +69,7 @@ logging:
     root: INFO
     com.example.TaskAPI: INFO
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
   structured:
     ecs:
       service:

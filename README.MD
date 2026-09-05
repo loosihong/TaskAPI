@@ -10,7 +10,7 @@ A Spring Boot REST API for task management.
 
 ```bash
 # 1. Copy and fill in environment file
-cp .env.example .env.dev
+cp .env.dev.example .env.dev
 
 # 2. Start the database
 docker-compose --env-file .env.dev up -d
@@ -22,6 +22,10 @@ net start winnat
 # 3. Run the application
 ./gradlew bootRun
 ./gradlew bootRun --debug-jvm
+
+# Generate a JWT signing key and paste it into JWT_SECRET in .env.dev
+openssl rand -hex 32
+
 ```
 
 - API: `http://localhost:8080`
