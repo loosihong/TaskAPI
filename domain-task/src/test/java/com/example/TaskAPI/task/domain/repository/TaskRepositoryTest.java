@@ -644,6 +644,9 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
                     List.of(assignee),
                     Priority.HIGH);
 
+            entityManager.refresh(task1);
+            entityManager.refresh(task2);
+            entityManager.refresh(task3);
             setCreatedAt(task2, LocalDateTime.now().minusDays(1));
             setCreatedAt(task3, LocalDateTime.now().minusDays(2));
 
@@ -717,6 +720,9 @@ public class TaskRepositoryTest extends BaseEntityRepositoryTest<Task> implement
                     List.of(assignee),
                     Priority.HIGH);
 
+            entityManager.refresh(task1);
+            entityManager.refresh(task2);
+            entityManager.refresh(task3);
             setUpdatedAt(task2, LocalDateTime.now().minusDays(1));
             setUpdatedAt(task3, LocalDateTime.now().minusDays(2));
 
