@@ -27,7 +27,7 @@ net start winnat
 openssl rand -hex 32
 
 # Update database schema
-./gradlew :service-identity:bootRun --args="--spring.jpa.hibernate.ddl-auto=none --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.action=create --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target=build/schema-gen/schema.sql"                                                                                                                                   
+./scripts/new-migration.ps1 -Service task -Description "add task priority index"                                                                                                                             
 
 
 ```
@@ -61,3 +61,14 @@ docker logs taskapi-mssql-dev
 ```
 
 ---
+
+## Health probes
+
+Orchestrators (Kubernetes, ECS, etc.) must target the split probes, not the aggregate endpoint:
+
+- Liveness: `/actuator/health/liveness`
+- Readiness: `/actuator/health/readiness`
+
+Do not point a liveness check at `/actuator/health` — it goes DOWN on any DB blip
+(via Liquibase's/JPA's DataSource health indicator) and would trigger unnecessary
+container restarts for a transient dependency issue rather than an actual app hang.

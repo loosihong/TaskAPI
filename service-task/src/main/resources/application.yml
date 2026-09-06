@@ -6,6 +6,12 @@ spring:
     username: ${APP_USER}
     password: ${APP_PASSWORD}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX}
+      minimum-idle: 2
+      connection-timeout: 10000
+      max-lifetime: 600000
+      leak-detection-threshold: 60000
   jpa:
     hibernate:
       ddl-auto: ${TASK_JPA_DDL_AUTO}
@@ -38,6 +44,8 @@ spring:
     cache-names: hackerrank-articles
     caffeine:
       spec: maximumSize=100,expireAfterWrite=10m
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 
 springdoc:
   api-docs:
@@ -45,6 +53,7 @@ springdoc:
 
 server:
   port: ${TASK_APP_PORT}
+  shutdown: graceful
 
 jwt:
   secret: ${JWT_SECRET}
@@ -58,7 +67,7 @@ jobrunr:
     enabled: true
     port: ${JOBRUNR_PORT:8000}
   database:
-    skip-create: false
+    skip-create: true
     table-prefix: "jobrunr_task."
   jobs:
     default-number-of-retries: 5
@@ -88,7 +97,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,prometheus
   endpoint:
     health:
       show-details: when-authorized

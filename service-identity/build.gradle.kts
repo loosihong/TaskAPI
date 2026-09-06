@@ -22,6 +22,8 @@ dependencies {
     annotationProcessor(platform(libs.spring.boot.dependencies))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
     testImplementation(testFixtures(project(":shared")))

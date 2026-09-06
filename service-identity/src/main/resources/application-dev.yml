@@ -3,7 +3,7 @@ logging:
     com.example.TaskAPI: DEBUG
     sql: DEBUG
   file:
-    name: logs/taskapi.log
+    name: logs/identityapi.log
   logback:
     rollingpolicy:
       max-file-size: 50MB

@@ -1,7 +1,6 @@
 plugins {
     java
     alias(libs.plugins.spring.boot)
-    id("org.liquibase.gradle") version "2.2.2"
 }
 
 val mockitoAgent: Configuration by configurations.creating
@@ -40,6 +39,8 @@ dependencies {
     annotationProcessor(libs.lombok.mapstruct.binding)
     annotationProcessor(libs.mapstruct.processor)
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
     testImplementation(testFixtures(project(":shared")))
     testImplementation(testFixtures(project(":shared-security")))
