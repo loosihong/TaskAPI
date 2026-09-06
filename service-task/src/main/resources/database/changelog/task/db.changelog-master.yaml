@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: database/changelog/task/changes/001-baseline.mssql.sql
+  - include:
+      file: database/changelog/task/changes/002-jobrunr.mssql.sql

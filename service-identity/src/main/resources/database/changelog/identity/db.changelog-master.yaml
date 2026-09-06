@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: database/changelog/identity/changes/001-baseline.mssql.sql

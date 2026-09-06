@@ -1,6 +1,7 @@
 plugins {
     java
     alias(libs.plugins.spring.boot)
+    id("org.liquibase.gradle") version "2.2.2"
 }
 
 val mockitoAgent: Configuration by configurations.creating
@@ -22,6 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-batch-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
     implementation(libs.caffeine)
     implementation(libs.springdoc.openapi)

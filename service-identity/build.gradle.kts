@@ -13,7 +13,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.springframework.boot:spring-boot-starter-liquibase")
     implementation(libs.springdoc.openapi)
 
     compileOnly(libs.lombok)
@@ -21,8 +21,6 @@ dependencies {
     annotationProcessor(libs.lombok)
     annotationProcessor(platform(libs.spring.boot.dependencies))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-
-    runtimeOnly("org.flywaydb:flyway-sqlserver")
 
     testImplementation("org.mockito:mockito-subclass")
     testImplementation("org.junit.jupiter:junit-jupiter-params")

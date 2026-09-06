@@ -11,6 +11,12 @@ logging:
     com.example.TaskAPI: INFO
     org.hibernate.SQL: WARN
 
+jobrunr:
+  dashboard:
+    enabled: false
+  database:
+    skip-create: true
+
 management:
   tracing:
     sampling:

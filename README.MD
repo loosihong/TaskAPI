@@ -26,6 +26,10 @@ net start winnat
 # Generate a JWT signing key and paste it into JWT_SECRET in .env.dev
 openssl rand -hex 32
 
+# Update database schema
+./gradlew :service-identity:bootRun --args="--spring.jpa.hibernate.ddl-auto=none --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.action=create --spring.jpa.properties.jakarta.persistence.schema-generation.scripts.create-target=build/schema-gen/schema.sql"                                                                                                                                   
+
+
 ```
 
 - API: `http://localhost:8080`

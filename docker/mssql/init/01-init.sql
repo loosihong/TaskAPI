@@ -1,7 +1,7 @@
 IF NOT EXISTS (
-   SELECT name
-   FROM sys.databases
-   WHERE name = '$(DB_NAME)'
+    SELECT name
+    FROM sys.databases
+    WHERE name = '$(DB_NAME)'
 )
 BEGIN
     EXEC ('CREATE DATABASE [$(DB_NAME)]');
@@ -10,8 +10,8 @@ GO
 
 IF EXISTS (
     SELECT name
-   FROM sys.databases
-   WHERE name = '$(DB_NAME)'
+    FROM sys.databases
+    WHERE name = '$(DB_NAME)'
         AND is_read_committed_snapshot_on = 0
 )
 BEGIN

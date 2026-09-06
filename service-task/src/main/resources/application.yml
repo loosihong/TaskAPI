@@ -15,10 +15,11 @@ spring:
           events:
             log:
               LOG_QUERIES_SLOWER_THAN_MS: 100
-  flyway:
+  liquibase:
     enabled: true
-    table: flyway_schema_history_identity
-    locations: classpath:db/migration/identity
+    change-log: classpath:database/changelog/task/db.changelog-master.yaml
+    database-change-log-table: DATABASECHANGELOG_TASK
+    database-change-log-lock-table: DATABASECHANGELOGLOCK_TASK
   batch:
     job:
       enabled: false

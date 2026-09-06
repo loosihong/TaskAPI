@@ -9,10 +9,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${IDENTITY_JPA_DDL_AUTO}
-  flyway:
+  liquibase:
     enabled: true
-    table: flyway_schema_history_identity
-    locations: classpath:db/migration/identity
+    change-log: classpath:database/changelog/identity/db.changelog-master.yaml
+    database-change-log-table: DATABASECHANGELOG_IDENTITY
+    database-change-log-lock-table: DATABASECHANGELOGLOCK_IDENTITY
 
 springdoc:
   api-docs:
