@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     alias(libs.plugins.spotbugs) apply false
     alias(libs.plugins.spring.boot) apply false
@@ -99,6 +101,16 @@ subprojects {
                     val (key, value) = line.split("=", limit = 2)
                     environment(key.trim(), value.trim())
                 }
+        }
+    }
+
+    tasks.withType<Test>().configureEach {
+        testLogging {
+            events("failed")
+            exceptionFormat = TestExceptionFormat.FULL
+            showStackTraces = true
+            showCauses = true
+            showStandardStreams = true
         }
     }
 }

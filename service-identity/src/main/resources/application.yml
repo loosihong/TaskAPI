@@ -32,8 +32,12 @@ server:
   shutdown: graceful
 
 jwt:
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION:3600000}
+  public-key: ${JWT_PUBLIC_KEY}
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}
+  signing:
+    private-key: ${JWT_PRIVATE_KEY}
+    expiration: ${JWT_EXPIRATION:3600000}
 
 logging:
   level:

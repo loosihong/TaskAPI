@@ -1,15 +1,18 @@
 package com.example.TaskAPI.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.Jwks;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 
-import javax.crypto.SecretKey;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.Date;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,19 +20,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JwtVerifierTest {
-    private static final String TEST_SECRET =
-            "a6d262dab6b4acc1305c26097e8d0923aecda558f99eef1bca3582c5db7df9067e3b6beefb9c18709235e958eac457cd534a69af33d0588dead39eeb6436c22c";
+    private static final String ISSUER = "taskapi-identity-test";
+    private static final String AUDIENCE = "taskapi-test";
 
+    private String privateKeyB64;
+    private String publicKeyB64;
+    private JwtProperties jwtProperties;
     private JwtIssuer jwtIssuer;
     private JwtVerifier jwtVerifier;
-    private SecretKey secretKey;
 
     @BeforeEach
     void setup() {
-        JwtProperties jwtProperties = new JwtProperties(TEST_SECRET, Duration.ofDays(1));
-        jwtIssuer = new JwtIssuer(jwtProperties);
+        KeyPair keyPair = Jwks.CRV.Ed25519.keyPair().build();
+
+        privateKeyB64 = Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
+        publicKeyB64 = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        jwtProperties = new JwtProperties(publicKeyB64, ISSUER, AUDIENCE);
+        jwtIssuer = new JwtIssuer(new JwtSigningProperties(privateKeyB64, Duration.ofHours(1)), jwtProperties);
         jwtVerifier = new JwtVerifier(jwtProperties);
-        secretKey = Keys.hmacShaKeyFor(HexFormat.of().parseHex(TEST_SECRET));
     }
 
     @Test
@@ -50,7 +58,8 @@ public class JwtVerifierTest {
 
     @Test
     void verify_withExpiredToken_returnsEmpty() {
-        JwtIssuer expiredIssuer = new JwtIssuer(new JwtProperties(TEST_SECRET, Duration.ofDays(-1)));
+        JwtIssuer expiredIssuer = new JwtIssuer(
+                new JwtSigningProperties(privateKeyB64, Duration.ofHours(-1)), jwtProperties);
         String expiredToken = expiredIssuer.issue(42L, "sihong", List.of(JwtVerifier.DEFAULT_ROLE));
 
         assertThat(jwtVerifier.verify(expiredToken)).isEmpty();
@@ -68,10 +77,12 @@ public class JwtVerifierTest {
     void verify_withMissingUidClaim_throwsJwtProcessingException() {
         String tokenNoUid = Jwts.builder()
                 .subject("sihong")
+                .issuer(ISSUER)
+                .audience().add(AUDIENCE).and()
                 .claim(JwtVerifier.CLAIM_ROLES, List.of(JwtVerifier.DEFAULT_ROLE))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 60_000))
-                .signWith(secretKey)
+                .signWith(decodePrivateKeyForTest(), Jwts.SIG.EdDSA)
                 .compact();
 
         assertThatThrownBy(() -> jwtVerifier.verify(tokenNoUid))
@@ -83,10 +94,12 @@ public class JwtVerifierTest {
     void verify_withMissingRolesClaim_defaultsToRoleUser() {
         String tokenNoRoles = Jwts.builder()
                 .subject("sihong")
+                .issuer(ISSUER)
+                .audience().add(AUDIENCE).and()
                 .claim(JwtVerifier.CLAIM_USER_ID, 42L)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 60_000))
-                .signWith(secretKey)
+                .signWith(decodePrivateKeyForTest(), Jwts.SIG.EdDSA)
                 .compact();
         Optional<JwtPrincipal> result = jwtVerifier.verify(tokenNoRoles);
 
@@ -94,5 +107,15 @@ public class JwtVerifierTest {
         assertThat(result.get().authorities())
                 .extracting(GrantedAuthority::getAuthority)
                 .containsExactly(JwtVerifier.DEFAULT_ROLE);
+    }
+
+    private PrivateKey decodePrivateKeyForTest() {
+        try {
+            byte[] der = Base64.getDecoder().decode(privateKeyB64);
+
+            return KeyFactory.getInstance("ED25519").generatePrivate(new PKCS8EncodedKeySpec(der));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

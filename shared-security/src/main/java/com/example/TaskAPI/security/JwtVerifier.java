@@ -3,12 +3,14 @@ package com.example.TaskAPI.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import javax.crypto.SecretKey;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Collection;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,10 +19,25 @@ public final class JwtVerifier {
     public static final String CLAIM_ROLES = "roles";
     public static final String DEFAULT_ROLE = "ROLE_USER";
 
-    private final SecretKey secretKey;
+    private final PublicKey publicKey;
+    private final String issuer;
+    private final String audience;
 
     public JwtVerifier(JwtProperties properties) {
-        this.secretKey = Keys.hmacShaKeyFor(HexFormat.of().parseHex(properties.secret()));
+        this.publicKey = decodePublicKey(properties.publicKey());
+        this.issuer = properties.issuer();
+        this.audience = properties.audience();
+    }
+
+    public static PublicKey decodePublicKey(String base64) {
+        try {
+            byte[] der = Base64.getDecoder().decode(base64);
+            KeyFactory keyFactory = KeyFactory.getInstance("Ed25519");
+
+            return keyFactory.generatePublic(new X509EncodedKeySpec(der));
+        } catch (GeneralSecurityException | IllegalArgumentException ex) {
+            throw new JwtProcessingException("Invalid JWT public key configuration", ex);
+        }
     }
 
     public Optional<JwtPrincipal> verify(String token) {
@@ -28,7 +45,9 @@ public final class JwtVerifier {
 
         try {
             claims = Jwts.parser()
-                    .verifyWith(secretKey)
+                    .verifyWith(publicKey)
+                    .requireIssuer(issuer)
+                    .requireAudience(audience)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();

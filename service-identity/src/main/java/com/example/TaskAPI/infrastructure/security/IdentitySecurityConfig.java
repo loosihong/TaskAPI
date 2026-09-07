@@ -4,7 +4,9 @@ import com.example.TaskAPI.security.JwtAuthenticationFilter;
 import com.example.TaskAPI.security.JwtIssuer;
 import com.example.TaskAPI.security.JwtProperties;
 import com.example.TaskAPI.security.JwtSecurityConfig;
+import com.example.TaskAPI.security.JwtSigningProperties;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +26,7 @@ import org.springframework.security.web.context.RequestAttributeSecurityContextR
 @Configuration
 @EnableWebSecurity
 @Import(JwtSecurityConfig.class)
+@EnableConfigurationProperties(JwtSigningProperties.class)
 public class IdentitySecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) {
@@ -49,8 +52,8 @@ public class IdentitySecurityConfig {
     }
 
     @Bean
-    public JwtIssuer jwtIssuer(JwtProperties jwtProperties) {
-        return new JwtIssuer(jwtProperties);
+    public JwtIssuer jwtIssuer(JwtSigningProperties signingProperties, JwtProperties jwtProperties) {
+        return new JwtIssuer(signingProperties, jwtProperties);
     }
 
     @Bean

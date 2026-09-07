@@ -15,5 +15,9 @@ spring:
     enabled: false
 
 jwt:
-  secret: a6d262dab6b4acc1305c26097e8d0923aecda558f99eef1bca3582c5db7df9067e3b6beefb9c18709235e958eac457cd534a69af33d0588dead39eeb6436c22c
-  expiration: 3600000
+  public-key: MCowBQYDK2VwAyEAq0rDDdL2HAKnDzr3k7RdEBfcqSaRWDxKsCPoBKtYgFc=
+  issuer: taskapi-identity-test
+  audience: taskapi-test
+  signing:
+    private-key: MC4CAQAwBQYDK2VwBCIEINasgH3eq32ySdu7p/4/dWyZURAunxRaLOHJ18DogBnU
+    expiration: 3600000

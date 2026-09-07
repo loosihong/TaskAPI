@@ -23,8 +23,8 @@ net start winnat
 ./gradlew bootRun
 ./gradlew bootRun --debug-jvm
 
-# Generate a JWT signing key and paste it into JWT_SECRET in .env.dev
-openssl rand -hex 32
+# Generate a JWT signing keypair (see jshell recipe in project notes) and paste into
+# JWT_PRIVATE_KEY / JWT_PUBLIC_KEY in .env.dev
 
 # Update database schema
 ./scripts/new-migration.ps1 -Service task -Description "add task priority index"                                                                                                                             
