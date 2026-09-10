@@ -15,12 +15,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${TASK_JPA_DDL_AUTO}
-    properties:
-      hibernate:
-        session:
-          events:
-            log:
-              LOG_QUERIES_SLOWER_THAN_MS: 100
+    open-in-view: false
   liquibase:
     enabled: true
     change-log: classpath:database/changelog/task/db.changelog-master.yaml
@@ -80,8 +75,12 @@ logging:
   level:
     root: INFO
     com.example.TaskAPI: INFO
+    com.zaxxer.hikari.HikariConfig: ERROR
+    org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration: ERROR
+    io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics: ERROR
+    org.springdoc.core.events.SpringDocAppInitializer: ERROR
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n%wEx"
   structured:
     ecs:
       service:

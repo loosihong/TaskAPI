@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class DataSourceProxyPostProcessor implements BeanPostProcessor {
+    // Routing key for the SQL_FILE / SQL_ASYNC appenders in shared/.../logging/.
+    // Must remain a string literal — do not convert to getLogger(DataSourceProxyPostProcessor.class).
     private static final Logger SQL_LOG = LoggerFactory.getLogger("com.example.TaskAPI.sql");
     private static final long SLOW_QUERY_MS = 0L;
 

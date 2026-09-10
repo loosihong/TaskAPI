@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <appender name="APP_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="APP_FILE"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <maxFlushTime>2000</maxFlushTime>
+    </appender>
+
+    <appender name="ERROR_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR_FILE"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <maxFlushTime>2000</maxFlushTime>
+    </appender>
+
+    <appender name="ACCESS_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ACCESS_FILE"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <maxFlushTime>2000</maxFlushTime>
+    </appender>
+
+    <appender name="SQL_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="SQL_FILE"/>
+        <queueSize>2048</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <maxFlushTime>2000</maxFlushTime>
+    </appender>
+</included>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <property name="LOG_DIR" value="${LOG_PATH:-logs}"/>
+
+    <include resource="logging/appenders-files.xml"/>
+    <include resource="logging/appenders-async.xml"/>
+
+    <logger name="com.example.TaskAPI.access" additivity="false">
+        <appender-ref ref="ACCESS_ASYNC"/>
+    </logger>
+    <logger name="com.example.TaskAPI.sql" additivity="false">
+        <appender-ref ref="SQL_ASYNC"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="APP_ASYNC"/>
+        <appender-ref ref="ERROR_ASYNC"/>
+    </root>
+</included>

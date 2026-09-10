@@ -15,6 +15,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: ${IDENTITY_JPA_DDL_AUTO}
+    open-in-view: false
   liquibase:
     enabled: true
     change-log: classpath:database/changelog/identity/db.changelog-master.yaml
@@ -43,8 +44,12 @@ logging:
   level:
     root: INFO
     com.example.TaskAPI: INFO
+    com.zaxxer.hikari.HikariConfig: ERROR
+    org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration: ERROR
+    io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics: ERROR
+    org.springdoc.core.events.SpringDocAppInitializer: ERROR
   pattern:
-    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n"
+    console: "%d{HH:mm:ss.SSS} %-5level [${spring.application.name}] [%X{traceId:-no-trace}] [%X{requestId:-}] %-40.40logger{39} : %msg %kvp%n%wEx"
   structured:
     ecs:
       service:

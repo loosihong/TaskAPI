@@ -28,12 +28,13 @@ services:
       context: .
       dockerfile: service-identity/Dockerfile
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: dev,filelog
       DB_HOST: mssql-dev
       DB_PORT: 1433
       DB_ENCRYPT: "false"
       DB_TRUST_CERT: "true"
       DB_NAME: ${DB_NAME}
+      DB_POOL_MAX: ${DB_POOL_MAX}
       APP_USER: ${APP_USER}
       APP_PASSWORD: ${APP_PASSWORD}
       IDENTITY_APP_NAME: ${IDENTITY_APP_NAME}
@@ -57,12 +58,13 @@ services:
       context: .
       dockerfile: service-task/Dockerfile
     environment:
-      SPRING_PROFILES_ACTIVE: dev
+      SPRING_PROFILES_ACTIVE: dev,filelog
       DB_HOST: mssql-dev
       DB_PORT: 1433
       DB_ENCRYPT: "false"
       DB_TRUST_CERT: "true"
       DB_NAME: ${DB_NAME}
+      DB_POOL_MAX: ${DB_POOL_MAX}
       APP_USER: ${APP_USER}
       APP_PASSWORD: ${APP_PASSWORD}
       TASK_APP_NAME: ${TASK_APP_NAME}

@@ -1,6 +1,7 @@
 package com.example.TaskAPI.core.exception;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -16,12 +17,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Slf4j
+@SuppressWarnings("PMD.MoreThanOneLogger") // Deliberate: client/server error split, see logger field comments below.
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger CLIENT_ERROR = LoggerFactory.getLogger("com.example.TaskAPI.error.client");
+    private static final Logger SERVER_ERROR = LoggerFactory.getLogger("com.example.TaskAPI.error.server");
+
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<String> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
-        log.warn("Optimistic lock conflict", ex);
+        SERVER_ERROR.warn("Optimistic lock conflict", ex);
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body("Task was modified by another request. Please fetch the latest version and retry.");
@@ -30,7 +34,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(
             MethodArgumentNotValidException ex) {
-        log.debug("Validation failed", ex);
+        CLIENT_ERROR.debug("Validation failed", ex);
 
         Map<String, String> fieldErrors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
@@ -47,28 +51,40 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
-        log.debug("Entity not found: {}", ex.getMessage());
+        CLIENT_ERROR.atDebug()
+                .setMessage("Entity not found: {}")
+                .addArgument(ex::getMessage)
+                .setCause(ex)
+                .log();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(DuplicateEntityException.class)
     public ResponseEntity<String> handleDuplicateEntity(DuplicateEntityException ex) {
-        log.debug("Duplicate entity: {}", ex.getMessage());
+        CLIENT_ERROR.atDebug()
+                .setMessage("Duplicate entity: {}")
+                .addArgument(ex::getMessage)
+                .setCause(ex)
+                .log();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
-        log.debug("Authentication failed");
+        CLIENT_ERROR.debug("Authentication failed", ex);
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
     }
 
     @ExceptionHandler(DataValidationException.class)
     public ResponseEntity<String> handleDataValidation(DataValidationException ex) {
-        log.debug("Data validation failed: {}", ex.getMessage());
+        CLIENT_ERROR.atDebug()
+                .setMessage("Data validation failed: {}")
+                .addArgument(ex::getMessage)
+                .setCause(ex)
+                .log();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
@@ -76,7 +92,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<Map<String, Object>> handleMethodValidationErrors(
             HandlerMethodValidationException ex) {
-        log.debug("Parameter validation failed", ex);
+        CLIENT_ERROR.debug("Parameter validation failed", ex);
 
         Map<String, String> parameterErrors = new HashMap<>();
 
@@ -98,7 +114,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGenericError(Exception ex) {
         String errorId = UUID.randomUUID().toString();
 
-        log.atError()
+        SERVER_ERROR.atError()
                 .setMessage("Unhandled exception")
                 .addKeyValue("error.id", errorId)
                 .setCause(ex)

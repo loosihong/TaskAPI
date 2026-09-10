@@ -6,6 +6,7 @@ RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
 FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /app/logs && chown app:app /app/logs
 COPY --from=extractor --chown=app:app /app/extracted/dependencies/ ./
 COPY --from=extractor --chown=app:app /app/extracted/spring-boot-loader/ ./
 COPY --from=extractor --chown=app:app /app/extracted/snapshot-dependencies/ ./

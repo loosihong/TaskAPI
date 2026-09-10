@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <springProperty scope="context" name="LOG_STEM" source="spring.application.name" defaultValue="identity"/>
+
+    <springProfile name="prod">
+        <include resource="org/springframework/boot/logging/logback/structured-console-appender.xml"/>
+    </springProfile>
+    <springProfile name="!prod">
+        <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    </springProfile>
+
+    <springProfile name="!filelog">
+        <include resource="logging/mode-console.xml"/>
+    </springProfile>
+
+    <springProfile name="filelog &amp; !prod">
+        <property name="LOG_MAX_SIZE" value="${TASKAPI_LOG_MAX_SIZE:-50MB}"/>
+        <property name="LOG_MAX_HISTORY" value="${TASKAPI_LOG_MAX_HISTORY:-14}"/>
+        <property name="LOG_TOTAL_CAP" value="${TASKAPI_LOG_TOTAL_CAP:-500MB}"/>
+    </springProfile>
+    <springProfile name="filelog &amp; prod">
+        <property name="LOG_MAX_SIZE" value="${TASKAPI_LOG_MAX_SIZE:-20MB}"/>
+        <property name="LOG_MAX_HISTORY" value="${TASKAPI_LOG_MAX_HISTORY:-3}"/>
+        <property name="LOG_TOTAL_CAP" value="${TASKAPI_LOG_TOTAL_CAP:-100MB}"/>
+    </springProfile>
+    <springProfile name="filelog">
+        <include resource="logging/mode-files.xml"/>
+    </springProfile>
+</configuration>

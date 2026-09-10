@@ -1,5 +1,6 @@
 package com.example.TaskAPI.task.api;
 
+import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.core.model.BaseEntity;
 import com.example.TaskAPI.task.api.dto.TaskAssigneeRequest;
 import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
@@ -8,6 +9,7 @@ import com.example.TaskAPI.task.api.dto.TaskDetailResponse;
 import com.example.TaskAPI.task.api.dto.TaskListSearchRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
 import com.example.TaskAPI.task.api.dto.TaskResponse;
+import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
 import com.example.TaskAPI.task.mapper.TaskMapper;
 import com.example.TaskAPI.task.service.TaskService;
@@ -58,7 +60,7 @@ public class TaskController {
             @PathVariable UUID uuid) {
         return taskService.getWithDetailByUuid(uuid)
                 .map(task -> ResponseEntity.ok(taskMapper.toResponse(task)))
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new EntityNotFoundException(Task.class, uuid));
     }
 
     @PostMapping("/listing")

@@ -3,16 +3,7 @@ logging:
     com.example.TaskAPI: DEBUG
     sql: DEBUG
   file:
-    name: logs/taskapi.log
-  logback:
-    rollingpolicy:
-      max-file-size: 50MB
-      max-history: 14
-      total-size-cap: 500MB
-      file-name-pattern: logs/taskapi-%d{yyyy-MM-dd}.%i.log.gz
-  structured:
-    format:
-      file: ecs
+    path: ${TASKAPI_LOG_DIR:logs}
 
 management:
   tracing:

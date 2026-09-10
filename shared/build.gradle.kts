@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.datasource.proxy)
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.security:spring-security-core")
+    implementation("ch.qos.logback:logback-classic")
 
     runtimeOnly("com.microsoft.sqlserver:mssql-jdbc")
 

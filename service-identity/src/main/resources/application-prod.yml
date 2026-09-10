@@ -9,7 +9,10 @@ logging:
   level:
     root: INFO
     com.example.TaskAPI: INFO
+    com.example.TaskAPI.error.client: DEBUG
     org.hibernate.SQL: WARN
+  file:
+    path: ${TASKAPI_LOG_DIR:/app/logs}
 
 management:
   tracing:

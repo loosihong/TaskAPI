@@ -19,6 +19,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     public static final String USER_ID = "userId";
 
     private static final String HEADER_REQUEST_ID = "X-Request-Id";
+    // Routing key for the ACCESS_FILE / ACCESS_ASYNC appenders in shared/.../logging/.
+    // Must remain a string literal — do not convert to getLogger(RequestLoggingFilter.class).
     private static final Logger ACCESS = LoggerFactory.getLogger("com.example.TaskAPI.access");
 
     @NullMarked
