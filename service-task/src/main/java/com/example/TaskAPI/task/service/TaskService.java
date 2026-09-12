@@ -5,6 +5,8 @@ import com.example.TaskAPI.core.exception.EntityNotFoundException;
 import com.example.TaskAPI.security.SecurityUtils;
 import com.example.TaskAPI.task.domain.entity.Task;
 import com.example.TaskAPI.task.domain.entity.TaskDetail;
+import com.example.TaskAPI.task.domain.event.TaskChangeType;
+import com.example.TaskAPI.task.domain.event.TaskChangedEvent;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
 import com.example.TaskAPI.task.domain.query.TaskDashboardItem;
 import com.example.TaskAPI.task.domain.query.TaskListFilter;
@@ -15,6 +17,7 @@ import com.example.TaskAPI.user.domain.entity.User;
 import com.example.TaskAPI.user.domain.repository.UserRepository;
 import com.querydsl.core.types.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final TaskPredicateBuilder taskPredicateBuilder;
     private final TaskReminderService taskReminderService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
@@ -78,6 +83,9 @@ public class TaskService {
             taskReminderService.onDueDateChanged(saved.getUuid(), null, saved.getTaskDetail().getDueDate());
         }
 
+        eventPublisher.publishEvent(
+                new TaskChangedEvent(saved.getUuid(), TaskChangeType.CREATED, assigneeUserIds(saved)));
+
         return saved;
     }
 
@@ -88,6 +96,7 @@ public class TaskService {
         LocalDate oldDueDate = Optional.ofNullable(found.getTaskDetail())
                 .map(TaskDetail::getDueDate)
                 .orElse(null);
+        Set<Long> oldAssigneeIds = assigneeUserIds(found);
 
         syncTaskAssignees(task, assigneeUuids);
         taskMapper.update(task, found);
@@ -98,7 +107,13 @@ public class TaskService {
                         .map(TaskDetail::getDueDate)
                         .orElse(null));
 
-        return taskRepository.save(found);
+        Task saved = taskRepository.save(found);
+        Set<Long> recipients = new HashSet<>(oldAssigneeIds);
+
+        recipients.addAll(assigneeUserIds(saved));
+        eventPublisher.publishEvent(new TaskChangedEvent(saved.getUuid(), TaskChangeType.UPDATED, recipients));
+
+        return saved;
     }
 
     @Transactional
@@ -112,26 +127,39 @@ public class TaskService {
         taskMapper.update(taskDetail, found);
         taskReminderService.onDueDateChanged(taskUuid, oldDueDate, found.getDueDate());
 
+        eventPublisher.publishEvent(
+                new TaskChangedEvent(taskUuid, TaskChangeType.UPDATED, assigneeUserIds(task)));
+
         return found;
     }
 
     @Transactional
     public void deleteTask(UUID uuid) {
-        if (!taskRepository.existsByUuid(uuid)) {
-            throw new EntityNotFoundException(Task.class, uuid);
-        }
+        Task task = taskRepository.findWithAssigneesByUuid(uuid)
+                .orElseThrow(() -> new EntityNotFoundException(Task.class, uuid));
+        Set<Long> recipients = assigneeUserIds(task);
 
         taskReminderService.cancel(uuid);
         taskRepository.deleteByUuid(uuid);
+
+        eventPublisher.publishEvent(new TaskChangedEvent(uuid, TaskChangeType.DELETED, recipients));
     }
 
+    @Transactional
     public Task updateTaskAssignees(UUID taskUuid, Set<UUID> assigneeUuids) {
         Task task = taskRepository.findWithAssigneesByUuid(taskUuid)
                 .orElseThrow(() -> new EntityNotFoundException(Task.class, taskUuid));
+        Set<Long> oldAssigneeIds = assigneeUserIds(task);
 
         syncTaskAssignees(task, assigneeUuids);
 
-        return taskRepository.save(task);
+        Task saved = taskRepository.save(task);
+        Set<Long> recipients = new HashSet<>(oldAssigneeIds);
+
+        recipients.addAll(assigneeUserIds(saved));
+        eventPublisher.publishEvent(new TaskChangedEvent(taskUuid, TaskChangeType.UPDATED, recipients));
+
+        return saved;
     }
 
     private void syncTaskAssignees(Task task, Set<UUID> assigneeUuids) {
@@ -149,5 +177,11 @@ public class TaskService {
         }
 
         task.syncAssignees(users);
+    }
+
+    private Set<Long> assigneeUserIds(Task task) {
+        return task.getTaskAssignees().stream()
+                .map(taskAssignee -> taskAssignee.getUser().getId())
+                .collect(Collectors.toSet());
     }
 }

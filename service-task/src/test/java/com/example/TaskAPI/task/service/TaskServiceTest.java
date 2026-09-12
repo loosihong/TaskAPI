@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class TaskServiceTest {
+    private static final AtomicLong NEXT_USER_ID = new AtomicLong(1L);
     @Mock
     private TaskMapper taskMapper;
     @Mock
@@ -49,10 +51,16 @@ public class TaskServiceTest {
     private Task buildFullTask(UUID uuid) {
         Set<TaskAssignee> taskAssignees = new HashSet<>(Set.of(
                 TaskAssignee.builder()
-                        .user(User.builder().uuid(UUID.randomUUID()).build())
+                        .user(User.builder()
+                                .id(NEXT_USER_ID.getAndIncrement())
+                                .uuid(UUID.randomUUID())
+                                .build())
                         .build(),
                 TaskAssignee.builder()
-                        .user(User.builder().uuid(UUID.randomUUID()).build())
+                        .user(User.builder()
+                                .id(NEXT_USER_ID.getAndIncrement())
+                                .uuid(UUID.randomUUID())
+                                .build())
                         .build()));
 
         return Task.builder()
@@ -230,7 +238,10 @@ public class TaskServiceTest {
             when(userRepository.findAllByUuidIn(anyCollection()))
                     .thenReturn(List.of(
                             taskAssignees.getFirst().getUser(),
-                            User.builder().uuid(newUserUuid).build()));
+                            User.builder()
+                                    .id(NEXT_USER_ID.getAndIncrement())
+                                    .uuid(newUserUuid)
+                                    .build()));
             when(taskRepository.save(any(Task.class)))
                     .thenReturn(task);
 
@@ -296,7 +307,10 @@ public class TaskServiceTest {
             when(userRepository.findAllByUuidIn(anyCollection()))
                     .thenReturn(List.of(
                             taskAssignees.getFirst().getUser(),
-                            User.builder().uuid(newUserUuid).build()));
+                            User.builder()
+                                    .id(NEXT_USER_ID.getAndIncrement())
+                                    .uuid(newUserUuid)
+                                    .build()));
             when(taskRepository.save(any(Task.class)))
                     .thenReturn(task);
 
@@ -356,8 +370,8 @@ public class TaskServiceTest {
         void deleteTask_found_deletesTaskAndReminder() {
             UUID uuid = UUID.randomUUID();
 
-            when(taskRepository.existsByUuid(any(UUID.class)))
-                    .thenReturn(true);
+            when(taskRepository.findWithAssigneesByUuid(uuid))
+                    .thenReturn(Optional.of(buildFullTask(uuid)));
 
             taskService.deleteTask(uuid);
 
@@ -367,10 +381,12 @@ public class TaskServiceTest {
 
         @Test
         void deleteTask_notFound_throwsException() {
-            when(taskRepository.existsByUuid(any(UUID.class)))
-                    .thenReturn(false);
+            UUID uuid = UUID.randomUUID();
 
-            assertThatThrownBy(() -> taskService.deleteTask(UUID.randomUUID()))
+            when(taskRepository.findWithAssigneesByUuid(uuid))
+                    .thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> taskService.deleteTask(uuid))
                     .isInstanceOf(EntityNotFoundException.class);
         }
     }

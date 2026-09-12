@@ -98,6 +98,11 @@
             <property name="exclusions" value="log,serialVersionUID"/>
         </properties>
     </rule>
+    <rule ref="category/java/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="threshold" value="30"/>
+        </properties>
+    </rule>
 
     <!-- Documentation: off entirely during active refactor, same reasoning as Checkstyle -->
 
