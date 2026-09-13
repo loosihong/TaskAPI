@@ -36,9 +36,17 @@ spring:
         base-url: ${HACKERRANK_BASE_URL}
         read-timeout: 5s
   cache:
+    type: caffeine
     cache-names: hackerrank-articles
     caffeine:
       spec: maximumSize=100,expireAfterWrite=10m
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      connect-timeout: 2s
+      timeout: 1s
   lifecycle:
     timeout-per-shutdown-phase: 30s
   mvc:
@@ -121,3 +129,7 @@ management:
         http.server.requests: true
       slo:
         http.server.requests: 50ms,100ms,300ms,500ms,1s,2s
+
+taskapi:
+  stream:
+    broadcaster: local

@@ -21,6 +21,11 @@ spring:
       default-batch-size: 5
   main:
     allow-bean-definition-overriding: true
+  cache:
+    type: caffeine
+    cache-names: hackerrank-articles
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=10m
   http:
     serviceclient:
       hackerrank:

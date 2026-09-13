@@ -24,3 +24,7 @@ management:
   tracing:
     sampling:
       probability: 0.1
+
+taskapi:
+  stream:
+    broadcaster: redis
