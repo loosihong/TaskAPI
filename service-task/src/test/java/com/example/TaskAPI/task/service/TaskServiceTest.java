@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -45,6 +46,8 @@ public class TaskServiceTest {
     private UserRepository userRepository;
     @Mock
     private TaskReminderService taskReminderService;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
     @InjectMocks
     private TaskService taskService;
 

@@ -19,7 +19,12 @@ public class SseEmitterRegistry {
         do {
             handles = emittersByUserId.computeIfAbsent(userId, id -> ConcurrentHashMap.newKeySet());
             handles.add(handle);
-        } while (!emittersByUserId.get(userId).equals(handles));
+            // Intentional reference comparison (not equals()): detects whether a concurrent
+            // remove() has swapped in a different Set instance (or deleted the key entirely)
+            // for this userId while we were adding to this one, in which case our addition
+            // may be orphaned and must retry. get(userId) can be null here — != handles is
+            // null-safe; .equals(handles) on a null result would NPE.
+        } while (emittersByUserId.get(userId) != handles); // NOPMD - CompareObjectsWithEquals
     }
 
     public void remove(Long userId, EmitterHandle handle) {

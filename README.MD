@@ -25,6 +25,7 @@ net start winnat
 
 # Generate a JWT signing keypair (see jshell recipe in project notes) and paste into
 # JWT_PRIVATE_KEY / JWT_PUBLIC_KEY in .env.dev
+openssl genpkey -algorithm Ed25519 -outform DER | openssl base64 -A
 
 # Update database schema
 ./scripts/new-migration.ps1 -Service task -Description "add task priority index"                                                                                                                             
