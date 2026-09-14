@@ -73,3 +73,33 @@ Orchestrators (Kubernetes, ECS, etc.) must target the split probes, not the aggr
 Do not point a liveness check at `/actuator/health` — it goes DOWN on any DB blip
 (via Liquibase's/JPA's DataSource health indicator) and would trigger unnecessary
 container restarts for a transient dependency issue rather than an actual app hang.
+
+---
+
+## Live dashboard (SSE)
+
+Two-instance verification is manual — a Docker harness or dual embedded server
+isn't worth building for this:
+
+```bash
+docker-compose up -d
+./gradlew :service-task:bootRun
+./gradlew :service-task:bootRun --args="--server.port=8082 --jobrunr.background-job-server.enabled=false --jobrunr.dashboard.enabled=false"
+```
+
+Open a stream (`GET /tasks/stream`) against `:8082`, write against `:8080`
+(e.g. `PUT /tasks/{uuid}`), and confirm the event arrives on the `:8082`
+stream. Disabling the JobRunr background server on the second instance avoids
+two schedulers competing in dev.
+
+**Known gap:** the nightly `SweepOverdueTasksTasklet` (01:00, up to
+`MAX_SWEEP = 100_000` tasks) does not publish per-task events — broadcasting
+one event per swept task would flood Redis and every connected client.
+Dashboards do not reflect the overnight OVERDUE sweep until manually
+refreshed. If this becomes a problem, the fix is a single `SWEEP_COMPLETED`
+broadcast to all connected users, not per-task events.
+
+**ALB dependency:** the ALB idle timeout must stay above the SSE heartbeat
+interval (20s, see `SseHeartbeat`). Default ALB idle timeout is 60s, which is
+fine as-is — don't lower it later without raising the heartbeat interval to
+match.

@@ -1,6 +1,8 @@
 package com.example.TaskAPI.task.stream;
 
 import com.example.TaskAPI.task.domain.event.TaskChangedEvent;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -12,6 +14,14 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class SseEmitterRegistry {
     private final ConcurrentMap<Long, Set<EmitterHandle>> emittersByUserId = new ConcurrentHashMap<>();
+    private final Counter sendFailedCounter;
+
+    public SseEmitterRegistry(MeterRegistry meterRegistry) {
+        meterRegistry.gauge("taskapi.sse.connections", this, SseEmitterRegistry::count);
+        this.sendFailedCounter = Counter.builder("taskapi.sse.send.failed")
+                .description("Dead-client sends removed from the registry")
+                .register(meterRegistry);
+    }
 
     public void register(Long userId, EmitterHandle handle) {
         Set<EmitterHandle> handles;
@@ -38,6 +48,7 @@ public class SseEmitterRegistry {
     public void send(Collection<Long> userIds, TaskChangedEvent event) {
         for (Long userId : userIds) {
             Set<EmitterHandle> handles = emittersByUserId.get(userId);
+
             if (handles == null || handles.isEmpty()) {
                 continue;
             }
@@ -46,6 +57,7 @@ public class SseEmitterRegistry {
                 try {
                     handle.send("task-changed", event);
                 } catch (IOException ex) {
+                    sendFailedCounter.increment();
                     handle.complete();
                     remove(userId, handle);
                 }

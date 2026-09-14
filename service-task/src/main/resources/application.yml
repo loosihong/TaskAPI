@@ -115,6 +115,11 @@ management:
       show-details: when-authorized
       probes:
         enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState, db, redis
   tracing:
     sampling:
       probability: ${TRACING_SAMPLE:1.0}

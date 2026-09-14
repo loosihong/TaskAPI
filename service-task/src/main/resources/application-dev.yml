@@ -13,3 +13,7 @@ management:
     metrics:
       export:
         enabled: false
+
+taskapi:
+  stream:
+    broadcaster: redis

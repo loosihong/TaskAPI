@@ -2,6 +2,7 @@ package com.example.TaskAPI.task.stream;
 
 import com.example.TaskAPI.task.domain.event.TaskChangeType;
 import com.example.TaskAPI.task.domain.event.TaskChangedEvent;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +37,7 @@ public class SseEmitterRegistryTest {
 
     @BeforeEach
     void setup() {
-        emitterRegistry = new SseEmitterRegistry();
+        emitterRegistry = new SseEmitterRegistry(new SimpleMeterRegistry());
     }
 
     @Nested
