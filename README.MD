@@ -28,7 +28,10 @@ net start winnat
 openssl genpkey -algorithm Ed25519 -outform DER | openssl base64 -A
 
 # Update database schema
-./scripts/new-migration.ps1 -Service task -Description "add task priority index"                                                                                                                             
+./scripts/new-migration.ps1 -Service task -Description "add task priority index"
+
+# Terminal query database
+docker exec -it taskapi-mssql-dev /opt/mssql-tools18/bin/sqlcmd -S localhost -U taskapi-dev -P "Dev@12345!" -d taskdb_dev -C -Q "SELECT uuid, username FROM [user] WHERE username = 'sihong'"                                                                                                         
 
 
 ```

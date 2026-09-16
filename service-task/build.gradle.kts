@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":domain-user"))
     implementation(project(":shared"))
     implementation(project(":shared-security"))
+    implementation(project(":shared-redis"))
     implementation(project(":integration-hackerrank"))
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
@@ -23,7 +24,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     implementation(libs.caffeine)
     implementation(libs.springdoc.openapi)
@@ -45,6 +45,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":shared")))
     testImplementation(testFixtures(project(":shared-security")))
+    testImplementation(testFixtures(project(":shared-redis")))
     testImplementation(platform(libs.testcontainers.bom))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")

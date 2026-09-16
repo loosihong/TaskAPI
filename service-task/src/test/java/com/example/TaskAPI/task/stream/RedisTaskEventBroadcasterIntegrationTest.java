@@ -1,5 +1,6 @@
 package com.example.TaskAPI.task.stream;
 
+import com.example.TaskAPI.redis.RedisTestContainer;
 import com.example.TaskAPI.task.domain.event.TaskChangeType;
 import com.example.TaskAPI.task.domain.event.TaskChangedEvent;
 import com.example.TaskAPI.web.BaseIntegrationTest;
@@ -36,8 +37,7 @@ public class RedisTaskEventBroadcasterIntegrationTest extends BaseIntegrationTes
 
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.redis.host", redisContainer::getHost);
-        registry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
+        RedisTestContainer.register(registry);
         registry.add("taskapi.stream.broadcaster", () -> "redis");
     }
 

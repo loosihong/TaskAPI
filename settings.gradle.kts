@@ -14,6 +14,7 @@ rootProject.name = "TaskAPI"
 
 include("shared")
 include("shared-security")
+include("shared-redis")
 include("domain-user")
 include("domain-task")
 include("integration-hackerrank")
