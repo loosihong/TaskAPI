@@ -48,6 +48,7 @@ public class TaskCommentControllerIntegrationTest extends BaseWebIntegrationTest
         TaskCommentRequest.Detail taskCommentRequest = TaskCommentRequest.Detail.builder()
                 .uuid(uuid)
                 .comment("North London forever")
+                .version(0)
                 .build();
 
         mockMvc.perform(put("/comments/{uuid}", uuid)
@@ -82,18 +83,21 @@ public class TaskCommentControllerIntegrationTest extends BaseWebIntegrationTest
         return TaskRequest.Detail.builder()
                 .title("Buy groceries")
                 .status(TaskStatus.TODO)
+                .version(0)
                 .build();
     }
 
     private TaskCommentRequest.Detail validTaskCommentRequest() {
         return TaskCommentRequest.Detail.builder()
                 .comment("Arsenal")
+                .version(0)
                 .build();
     }
 
     private TaskCommentRequest.Detail getTaskCommentRequest() {
         return TaskCommentRequest.Detail.builder()
                 .comment("Arsenal")
+                .version(0)
                 .build();
     }
 

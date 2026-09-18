@@ -6,6 +6,7 @@ import com.example.TaskAPI.task.api.dto.TaskDashboardSearchRequest;
 import com.example.TaskAPI.task.api.dto.TaskDetailRequest;
 import com.example.TaskAPI.task.api.dto.TaskListSearchRequest;
 import com.example.TaskAPI.task.api.dto.TaskRequest;
+import com.example.TaskAPI.task.api.dto.TaskResponse;
 import com.example.TaskAPI.task.domain.enums.Priority;
 import com.example.TaskAPI.task.domain.enums.TaskStatus;
 import com.example.TaskAPI.task.domain.query.TaskDashboardFilter;
@@ -59,12 +60,12 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
 
     @Test
     void getTaskByUuid_found_returnsTask() throws Exception {
-        UUID uuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
 
-        mockMvc.perform(get("/tasks/{uuid}", uuid)
+        mockMvc.perform(get("/tasks/{uuid}", taskResponse.uuid())
                         .with(authenticated()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.uuid").value(uuid.toString()));
+                .andExpect(jsonPath("$.uuid").value(taskResponse.uuid().toString()));
     }
 
     @Test
@@ -72,6 +73,7 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
         TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
                 .title("Buy groceries")
                 .status(TaskStatus.TODO)
+                .version(0)
                 .build();
 
         mockMvc.perform(post("/tasks")
@@ -96,44 +98,46 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
 
     @Test
     void updateTask_preservesDetail() throws Exception {
-        UUID uuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
         TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
-                .uuid(uuid)
+                .uuid(taskResponse.uuid())
                 .title("Earn money")
                 .status(TaskStatus.IN_PROGRESS)
+                .version(taskResponse.version())
                 .build();
 
-        mockMvc.perform(put("/tasks/{uuid}", uuid)
+        mockMvc.perform(put("/tasks/{uuid}", taskResponse.uuid())
                         .with(authenticated())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(taskRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.uuid").value(uuid.toString()))
+                .andExpect(jsonPath("$.uuid").value(taskResponse.uuid().toString()))
                 .andExpect(jsonPath("$.taskDetail").exists());
     }
 
     @Test
     void deleteTask_softDeletes_returnsNotFound() throws Exception {
-        UUID uuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
 
-        mockMvc.perform(delete("/tasks/{uuid}", uuid)
+        mockMvc.perform(delete("/tasks/{uuid}", taskResponse.uuid())
                         .with(authenticated()))
                 .andExpect(status().isNoContent());
-        mockMvc.perform(get("/tasks/{uuid}", uuid)
+        mockMvc.perform(get("/tasks/{uuid}", taskResponse.uuid())
                         .with(authenticated()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void updateTaskDetail_returnsTaskDetail() throws Exception {
-        UUID uuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
         TaskDetailRequest.Detail taskDetailRequest = TaskDetailRequest.Detail.builder()
                 .description("North London forever")
                 .priority(Priority.HIGH)
                 .dueDate(LocalDate.now().plusDays(10))
+                .version(taskResponse.taskDetail().version())
                 .build();
 
-        mockMvc.perform(put("/tasks/{uuid}/detail", uuid)
+        mockMvc.perform(put("/tasks/{uuid}/detail", taskResponse.uuid())
                         .with(authenticated())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(taskDetailRequest)))
@@ -143,21 +147,56 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
 
     @Test
     void updateTask_persistsAuditLogAsync() throws Exception {
-        UUID uuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
 
-        mockMvc.perform(put("/tasks/{uuid}", uuid)
+        mockMvc.perform(put("/tasks/{uuid}", taskResponse.uuid())
                         .with(authenticated())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 TaskRequest.Detail.builder()
-                                        .uuid(uuid)
+                                        .uuid(taskResponse.uuid())
                                         .title("updated")
                                         .status(TaskStatus.IN_PROGRESS)
+                                        .version(taskResponse.version())
                                         .build())))
                 .andExpect(status().isOk());
 
         await().atMost(Duration.ofSeconds(2))
-                .untilAsserted(() -> assertThat(auditLogRepository.findByEntityUuid(uuid)).isNotEmpty());
+                .untilAsserted(() -> assertThat(
+                        auditLogRepository.findByEntityUuid(taskResponse.uuid())).isNotEmpty());
+    }
+
+    @Test
+    void updateTask_missingVersion_returnsBadRequest() throws Exception {
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
+        TaskRequest.Detail taskRequest = TaskRequest.Detail.builder()
+                .uuid(taskResponse.uuid())
+                .title("No version supplied")
+                .status(TaskStatus.IN_PROGRESS)
+                .build();
+
+        mockMvc.perform(put("/tasks/{uuid}", taskResponse.uuid())
+                        .with(authenticated())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(taskRequest)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateTask_staleVersion_returnsConflict() throws Exception {
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
+        TaskRequest.Detail staleRequest = TaskRequest.Detail.builder()
+                .uuid(taskResponse.uuid())
+                .title("Stale update")
+                .status(TaskStatus.TODO)
+                .version(taskResponse.version() + 100)
+                .build();
+
+        mockMvc.perform(put("/tasks/{uuid}", taskResponse.uuid())
+                        .with(authenticated())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(staleRequest)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -168,19 +207,19 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
 
     @Test
     void updateTaskAssignees_returnsTask() throws Exception {
-        UUID taskUuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
         User user1 = createUser("user1");
         User user2 = createUser("user2");
         TaskAssigneeRequest.Assign assigneeRequest = TaskAssigneeRequest.Assign.builder()
                 .assigneeUuids(Set.of(user1.getUuid(), user2.getUuid()))
                 .build();
 
-        mockMvc.perform(put("/tasks/{taskUuid}/assignees", taskUuid)
+        mockMvc.perform(put("/tasks/{taskUuid}/assignees", taskResponse.uuid())
                         .with(authenticated())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(assigneeRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.uuid").value(taskUuid.toString()))
+                .andExpect(jsonPath("$.uuid").value(taskResponse.uuid().toString()))
                 .andExpect(jsonPath("$.taskAssignees.length()").value(2));
     }
 
@@ -191,15 +230,17 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .title("Read book")
                 .status(TaskStatus.DONE)
                 .assigneeUuids(Set.of(user1.getUuid()))
+                .version(0)
                 .build();
         TaskRequest.Detail taskRequest2 = TaskRequest.Detail.builder()
                 .title("Arsenal")
                 .status(TaskStatus.IN_PROGRESS)
+                .version(0)
                 .build();
-        UUID task1Uuid = createTask(taskRequest1);
+        TaskResponse.Detail taskResponse1 = createTask(taskRequest1);
 
-        createTask(getTaskRequest());
         createTask(taskRequest2);
+        createTask(getTaskRequest());
 
         mockMvc.perform(post("/tasks/listing")
                         .with(authenticated())
@@ -215,7 +256,7 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.content[0].uuid").value(task1Uuid.toString()))
+                .andExpect(jsonPath("$.content[0].uuid").value(taskResponse1.uuid().toString()))
                 .andExpect(jsonPath("$.content[0].title").value(taskRequest1.title()))
                 .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status().getCode()));
     }
@@ -227,15 +268,17 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .status(TaskStatus.DONE)
                 .assigneeUuids(Set.of(loginUser.getUuid()))
                 .taskDetail(getTaskDetailRequest())
+                .version(0)
                 .build();
         TaskRequest.Detail taskRequest2 = TaskRequest.Detail.builder()
                 .title("Arsenal")
                 .status(TaskStatus.IN_PROGRESS)
+                .version(0)
                 .build();
-        UUID task1Uuid = createTask(taskRequest1);
+        TaskResponse.Detail taskResponse1 = createTask(taskRequest1);
 
-        createTask(getTaskRequest());
         createTask(taskRequest2);
+        createTask(getTaskRequest());
 
         mockMvc.perform(post("/tasks/dashboard")
                         .with(authenticated())
@@ -253,7 +296,7 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.content[0].taskUuid").value(task1Uuid.toString()))
+                .andExpect(jsonPath("$.content[0].taskUuid").value(taskResponse1.uuid().toString()))
                 .andExpect(jsonPath("$.content[0].title").value(taskRequest1.title()))
                 .andExpect(jsonPath("$.content[0].status").value(taskRequest1.status().getCode()))
                 .andExpect(jsonPath("$.content[0].priority")
@@ -274,9 +317,9 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
 
     @Test
     void deleteTask_cancelsReminderJob() throws Exception {
-        UUID taskUuid = createTask(getTaskRequest());
+        TaskResponse.Detail taskResponse = createTask(getTaskRequest());
 
-        mockMvc.perform(delete("/tasks/{taskUuid}", taskUuid)
+        mockMvc.perform(delete("/tasks/{taskUuid}", taskResponse.uuid())
                         .with(authenticated()))
                 .andExpect(status().isNoContent());
 
@@ -289,6 +332,7 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .title("Buy groceries")
                 .status(TaskStatus.TODO)
                 .taskDetail(getTaskDetailRequest())
+                .version(0)
                 .build();
     }
 
@@ -297,17 +341,18 @@ public class TaskControllerIntegrationTest extends BaseWebIntegrationTest {
                 .description("No more food")
                 .priority(Priority.MEDIUM)
                 .dueDate(LocalDate.now().plusDays(1))
+                .version(0)
                 .build();
     }
 
 
-    private UUID createTask(TaskRequest.Detail taskRequest) throws Exception {
-        return UUID.fromString(objectMapper.readTree(
-                        mockMvc.perform(post("/tasks")
-                                        .with(authenticated())
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .content(objectMapper.writeValueAsString(taskRequest)))
-                                .andReturn().getResponse().getContentAsString())
-                .get("uuid").asString());
+    private TaskResponse.Detail createTask(TaskRequest.Detail taskRequest) throws Exception {
+        return objectMapper.readValue(
+                mockMvc.perform(post("/tasks")
+                                .with(authenticated())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(taskRequest)))
+                        .andReturn().getResponse().getContentAsString(),
+                TaskResponse.Detail.class);
     }
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -70,6 +72,9 @@ public abstract class BaseEntity implements Snapshotable {
     @Column(name = "is_deleted", insertable = false, updatable = false)
     protected boolean deleted;
 
+    @Transient
+    private Integer loadedVersion;
+
     @PrePersist
     public void prePersist() {
         if (uuid == null) {
@@ -79,6 +84,8 @@ public abstract class BaseEntity implements Snapshotable {
 
     @PostLoad
     protected void autoSnapshot() {
+        loadedVersion = version;
+
         if (!(this instanceof Auditable)) {
             return;
         }
@@ -103,6 +110,13 @@ public abstract class BaseEntity implements Snapshotable {
                             field.getName(), this.getClass().getSimpleName(), ex);
                 }
             }
+        }
+    }
+
+    @PreUpdate
+    protected void checkOptimisticLock() {
+        if (loadedVersion != null && !loadedVersion.equals(version)) {
+            throw new ObjectOptimisticLockingFailureException(getClass(), id);
         }
     }
 }

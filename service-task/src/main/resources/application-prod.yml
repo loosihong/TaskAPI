@@ -10,7 +10,7 @@ logging:
     root: INFO
     com.example.TaskAPI: INFO
     com.example.TaskAPI.error.client: DEBUG
-    org.hibernate.SQL: WARN
+    org.hibernate.SQL: DEBUG
   file:
     path: ${TASKAPI_LOG_DIR:/app/logs}
 

@@ -10,11 +10,13 @@ public class PiiMaskingCustomizer implements StructuredLoggingJsonMembersCustomi
 
     @Override
     public void customize(JsonWriter.Members<Object> members) {
-        members.add("message", (event) -> maskNric(String.valueOf(event)));
+        members.applyingValueProcessor(JsonWriter.ValueProcessor
+                .of(this::maskNric)
+                .whenHasPath("message"));
     }
 
-    private String maskNric(String message) {
-        return NRIC.matcher(message).replaceAll(m -> {
+    private Object maskNric(Object value) {
+        return value == null ? null : NRIC.matcher(String.valueOf(value)).replaceAll(m -> {
             String match = m.group();
 
             return match.charAt(0) + "****" + match.substring(5);

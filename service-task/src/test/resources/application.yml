@@ -33,6 +33,7 @@ spring:
   liquibase:
     enabled: false
 
+
 jwt:
   public-key: MCowBQYDK2VwAyEAq0rDDdL2HAKnDzr3k7RdEBfcqSaRWDxKsCPoBKtYgFc=
   issuer: taskapi-identity-test

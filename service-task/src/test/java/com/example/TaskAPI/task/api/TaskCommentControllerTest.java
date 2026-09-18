@@ -43,12 +43,14 @@ public class TaskCommentControllerTest extends BaseControllerTest {
     private TaskCommentResponse.Detail getTaskCommentResponse(UUID uuid) {
         return TaskCommentResponse.Detail.builder()
                 .uuid(uuid)
+                .version(0)
                 .build();
     }
 
     private TaskCommentRequest.Detail getTaskCommentRequest(UUID uuid) {
         return TaskCommentRequest.Detail.builder()
                 .uuid(uuid)
+                .version(0)
                 .build();
     }
 
@@ -109,6 +111,7 @@ public class TaskCommentControllerTest extends BaseControllerTest {
                             .content(objectMapper.writeValueAsString(
                                     TaskCommentRequest.Detail.builder()
                                             .comment("a".repeat(2048))
+                                            .version(0)
                                             .build())))
                     .andExpect(status().isBadRequest());
         }
@@ -116,12 +119,14 @@ public class TaskCommentControllerTest extends BaseControllerTest {
         private TaskCommentRequest.Detail getTaskCommentRequest(UUID uuid) {
             return TaskCommentRequest.Detail.builder()
                     .uuid(uuid)
+                    .version(0)
                     .build();
         }
 
         private TaskCommentResponse.Detail getTaskCommentResponse(UUID uuid) {
             return TaskCommentResponse.Detail.builder()
                     .uuid(uuid)
+                    .version(0)
                     .build();
         }
     }

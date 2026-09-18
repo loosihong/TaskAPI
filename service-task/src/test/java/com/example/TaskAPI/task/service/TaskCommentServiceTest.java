@@ -71,18 +71,16 @@ public class TaskCommentServiceTest {
     @DisplayName("Create Operations")
     class CreateOperations {
         @Test
-        void createTaskComment_savesTaskComment() {
+        void createTaskComment_addsCommentToTask() {
             when(taskRepository.findByUuid(task.getUuid()))
                     .thenReturn(Optional.of(task));
-            when(taskCommentRepository.save(taskComment))
-                    .thenReturn(taskComment);
 
             TaskComment result = taskCommentService.createTaskComment(task.getUuid(), taskComment);
 
             assertThat(result).isEqualTo(taskComment);
             assertThat(result.getTask()).isEqualTo(task);
+            assertThat(task.getTaskComments()).contains(taskComment);
             verify(taskRepository).findByUuid(task.getUuid());
-            verify(taskCommentRepository).save(taskComment);
         }
 
         @Test

@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -23,13 +21,6 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 public class RedisTaskEventBroadcasterIntegrationTest extends BaseIntegrationTest {
-    private static final GenericContainer<?> redisContainer =
-            new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
-
-    static {
-        redisContainer.start();
-    }
-
     @Autowired
     private TaskEventBroadcaster broadcaster;
     @Autowired

@@ -103,7 +103,6 @@ logging:
         include-common-frames: false
         include-hashes: true
       customizer: com.example.TaskAPI.core.observability.PiiMaskingCustomizer
-      exclude: message
 
 management:
   endpoints:

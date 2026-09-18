@@ -16,5 +16,6 @@ import java.lang.annotation.Target;
 @Mapping(target = "updatedAt", ignore = true)
 @Mapping(target = "updatedBy", ignore = true)
 @Mapping(target = "deleted", ignore = true)
+@Mapping(target = "loadedVersion", ignore = true)
 public @interface IgnoreBaseEntityMapping {
 }

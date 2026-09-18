@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,7 +26,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ResponseEntity<String> handleOptimisticLocking(ObjectOptimisticLockingFailureException ex) {
-        SERVER_ERROR.warn("Optimistic lock conflict", ex);
+        CLIENT_ERROR.atDebug()
+                .setMessage("Optimistic lock conflict: {}")
+                .addArgument(ex::getMessage)
+                .log();
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body("Task was modified by another request. Please fetch the latest version and retry.");
@@ -54,7 +58,6 @@ public class GlobalExceptionHandler {
         CLIENT_ERROR.atDebug()
                 .setMessage("Entity not found: {}")
                 .addArgument(ex::getMessage)
-                .setCause(ex)
                 .log();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
@@ -65,7 +68,6 @@ public class GlobalExceptionHandler {
         CLIENT_ERROR.atDebug()
                 .setMessage("Duplicate entity: {}")
                 .addArgument(ex::getMessage)
-                .setCause(ex)
                 .log();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
@@ -83,7 +85,6 @@ public class GlobalExceptionHandler {
         CLIENT_ERROR.atDebug()
                 .setMessage("Data validation failed: {}")
                 .addArgument(ex::getMessage)
-                .setCause(ex)
                 .log();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
@@ -108,6 +109,26 @@ public class GlobalExceptionHandler {
         body.put("errors", parameterErrors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(TransactionSystemException.class)
+    public ResponseEntity<String> handleTransactionSystemException(TransactionSystemException ex) {
+        Throwable cause = ex.getCause();
+
+        while (cause != null) {
+            if (cause instanceof ObjectOptimisticLockingFailureException optimisticLockEx) {
+                return handleOptimisticLocking(optimisticLockEx);
+            }
+
+            cause = cause.getCause();
+        }
+
+        SERVER_ERROR.atError()
+                .setMessage("Unhandled transaction system exception")
+                .setCause(ex)
+                .log();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

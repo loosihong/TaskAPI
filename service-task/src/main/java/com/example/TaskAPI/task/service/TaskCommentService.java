@@ -43,7 +43,7 @@ public class TaskCommentService {
                 .orElseThrow(() -> new EntityNotFoundException(Task.class, taskUuid));
         task.addComment(taskComment);
 
-        return taskCommentRepository.save(taskComment);
+        return taskComment;
     }
 
     @Transactional

@@ -76,6 +76,7 @@ public class TaskControllerTest extends BaseControllerTest {
                 .uuid(uuid)
                 .title("Buy groceries")
                 .status(TaskStatus.TODO)
+                .version(0)
                 .build();
     }
 
@@ -87,7 +88,9 @@ public class TaskControllerTest extends BaseControllerTest {
                 .assigneeUuids(new HashSet<>(List.of(UUID.randomUUID(), UUID.randomUUID())))
                 .taskDetail(TaskDetailRequest.Detail.builder()
                         .priority(Priority.LOW)
+                        .version(0)
                         .build())
+                .version(0)
                 .build();
     }
 
@@ -96,6 +99,7 @@ public class TaskControllerTest extends BaseControllerTest {
                 .uuid(uuid)
                 .title("Buy groceries")
                 .status(TaskStatus.TODO)
+                .version(0)
                 .build();
     }
 
@@ -116,7 +120,9 @@ public class TaskControllerTest extends BaseControllerTest {
                 )))
                 .taskDetail(TaskDetailResponse.Detail.builder()
                         .priority(Priority.LOW)
+                        .version(0)
                         .build())
+                .version(0)
                 .build();
     }
 
@@ -446,12 +452,14 @@ public class TaskControllerTest extends BaseControllerTest {
             when(taskService.updateTaskDetail(eq(taskUuid), any(TaskDetail.class)))
                     .thenReturn(TaskDetail.builder()
                             .priority(Priority.MEDIUM)
+                            .version(0)
                             .build());
 
             mockMvc.perform(put("/tasks/{taskUuid}/detail", taskUuid)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(TaskDetail.builder()
                                     .priority(Priority.MEDIUM)
+                                    .version(0)
                                     .build())))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.priority").value(Priority.MEDIUM.toString()));
@@ -466,6 +474,7 @@ public class TaskControllerTest extends BaseControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(TaskDetail.builder()
                                     .priority(Priority.MEDIUM)
+                                    .version(0)
                                     .build())))
                     .andExpect(status().isNotFound());
         }
@@ -477,6 +486,7 @@ public class TaskControllerTest extends BaseControllerTest {
                             .content(objectMapper.writeValueAsString(
                                     TaskDetailRequest.Detail.builder()
                                             .description("a".repeat(2048))
+                                            .version(0)
                                             .build())))
                     .andExpect(status().isBadRequest());
         }
